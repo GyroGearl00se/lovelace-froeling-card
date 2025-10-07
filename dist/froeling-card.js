@@ -363,6 +363,59 @@ class FroelingZirkulationspumpeCard extends BaseFroelingCard {
 }
 customElements.define('froeling-zirkulationspumpe-card', FroelingZirkulationspumpeCard);
 
+class FroelingSolarthermieCard extends BaseFroelingCard {
+    constructor() {
+        super();
+        this.svgUrl = '/local/community/lovelace-froeling-card/solarthermie.svg';
+    }
+
+    static getStubConfig() {
+        return {
+            entities: [
+                {
+                    id: 'txt_pump-01-rpm',
+                    entity: 'sensor.froeling_kollektor_pumpe',
+                    label: 'Ansteuerung der Kollektorpumpe'
+                },
+                {
+                    id: 'txt_operating-hours',
+                    entity: 'sensor.froeling_kollektor_pumpe_laufzeit',
+                    label: 'Betriebsstunden der Kollektorpumpe'
+                },
+                {
+                    id: 'txt_outside-temp',
+                    entity: 'sensor.froeling_aussentemperatur',
+                    label: 'Außentemperatur'
+                },
+                {
+                    id: 'txt_solar-temp',
+                    entity: 'sensor.froeling_kollektortemperatur',
+                    label: 'Kollektortemperatur'
+                },
+                {
+                    id: 'txt_return-temp',
+                    entity: 'sensor.froeling_kollektor_rueklauftemperatur',
+                    label: 'Kollektor-Rücklauftemperatur'
+                },
+                {
+                    id: 'txt_flow-temp',
+                    entity: 'sensor.froeling_kollektor_vorlauftemperatur',
+                    label: 'Kollektor-Vorlauftemperatur'
+                },
+                {
+                    id: 'obj_pump-01',
+                    entity: 'binary_sensor.froeling_kollektorpumpe_an_aus',
+                    label: 'Status der Kollektorpumpe',
+                    stateClasses: {
+                        'on': 'stPumpActive',
+                        'default': 'stPumpInActive',
+                    }
+                }
+            ]
+        };
+    }
+}
+customElements.define('froeling-solarthermie-card', FroelingSolarthermieCard);
 
 if (window.customCards) {
     window.customCards.push(
@@ -410,6 +463,14 @@ if (window.customCards) {
             type: "froeling-zirkulationspumpe-card",
             name: "Froeling Zirkulationspumpe Card",
             description: "Visuelle Darstellung Fröling - Zirkulationspumpe",
+            preview: true,
+            editor: "froeling-card-editor",
+            documentationURL: "https://github.com/GyroGearl00se"
+        },
+        {
+            type: "froeling-solarthermie-card",
+            name: "Froeling Solarthermie Card",
+            description: "Visuelle Darstellung Fröling - Solarthermie",
             preview: true,
             editor: "froeling-card-editor",
             documentationURL: "https://github.com/GyroGearl00se"

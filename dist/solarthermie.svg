@@ -1,0 +1,170 @@
+<svg version="1.1" id="Ebene_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 650 280" style="enable-background:new 0 0 650 280;" xml:space="preserve">
+	<defs>
+        <style>
+            @import url("https://fonts.googleapis.com/css?family=Roboto:400,400i,700,700i");
+        </style>
+	</defs>
+<style type="text/css">
+	.stPumpActive{fill:#87AD27;}
+	.stPumpInActive{fill:#BBBBBB;}
+	.stAvailable{opacity:1}
+	.stNotAvailable{opacity:0}
+	.stOption{opacity:0.25}
+	.st0{fill:#6E8CA0;}
+	.st1{fill:#C86464;}
+	.st2{fill:#C8C8C8;}
+	.st3{fill:#646464;}
+	.st4{fill:#323232;}
+	.st6{fill:#FFFFFF;stroke:#C8C8C8;stroke-miterlimit:10;}	.st7{font-family:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Roboto,Arial,Helvetica,sans-serif;font-specification:'Roboto,Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;}
+	.st8{font-size:14px;}
+	.st9{fill:#FFFFFF;stroke:#CCCCCC;stroke-miterlimit:10;}
+	.st10{fill:#CCCCCC;}
+</style>
+<polygon id="return-direction" class="st0" points="578.6,207.4 567.3,207.4 567.3,201.4 551.8,210.4 567.3,219.3 567.3,213.4
+	578.5,213.4 "/>
+<polygon id="flow-direction" class="st1" points="551.8,155 563.1,155 563.1,161 578.6,152 563.1,143.1 563.1,149 551.9,149 "/>
+<path id="flow-line" class="st1" d="M207,148.9v-113l-6,5v114h340.8v-6H207z M204,98.7l-2.2-4.8h4.4L204,98.7z M262.7,154.2v-4.4
+	l4.8,2.2L262.7,154.2z M440.4,154.2v-4.4l4.8,2.2L440.4,154.2z"/>
+<path id="return-line-01" class="st0" d="M305.2,204.6h-1.1c-0.2,0-0.4,0.2-0.4,0.4v2.1v0.2h-159v-125l-6,5v126h165v0.2v2.3
+	c0,0.2,0.2,0.4,0.4,0.4h1.1c0.2,0,0.4-0.2,0.4-0.4V205C305.6,204.7,305.4,204.6,305.2,204.6z M139.6,159l2.2-4.8l2.2,4.8H139.6z
+	 M220,212.6l-4.8-2.2l4.8-2.2V212.6z"/>
+<path id="return-line-02" class="st0" d="M343.6,207.3V205c0-0.2-0.2-0.4-0.4-0.4h-1.1c-0.2,0-0.4,0.2-0.4,0.4v10.8
+	c0,0.2,0.2,0.4,0.4,0.4h1.1c0.2,0,0.4-0.2,0.4-0.4v-2.1h198.2l0-6.4H343.6z M445.1,212.6l-4.8-2.2l4.8-2.2V212.6z"/>
+<polygon id="room" class="st2" points="122.7,240.1 112.7,240.1 112.7,112.2 233.4,22.5 352.1,110.7 346.1,118.7 233.4,34.9
+	122.7,117.2 "/>
+<rect id="solar" x="118.9" y="55.8" transform="matrix(0.8025 -0.5966 0.5966 0.8025 -2.1085 113.2338)" class="st3" width="102.3" height="8"/>
+<g id="obj_return-temp" class="stAvailable">
+	<path class="st4" d="M188,207.3h15v-3.8c0-0.7-0.5-1.3-1-1.3h-13c-0.5,0-1,0.6-1,1.3V207.3z"/>
+</g>
+<g id="obj_flow-temp" class="stAvailable">
+	<path class="st4" d="M233.7,148.9h15v-3.8c0-0.7-0.5-1.3-1-1.3h-13c-0.5,0-1,0.6-1,1.3V148.9z"/>
+</g>
+<g id="obj_pump-01" class="stPumpInActive"><title>Status der Kollektorpumpe</title>
+	<path d="M327.3,210.2c0-1.9-1.5-3.4-3.4-3.4s-3.4,1.5-3.4,3.4c0,1.9,1.5,3.4,3.4,3.4S327.3,212.1,327.3,210.2z"/>
+	<path d="M308.2,215.8v-2.3h5.3c-0.3-1-0.5-2.1-0.5-3.2c0-1.1,0.2-2.1,0.4-3.1h-5.3V205c0-0.2-0.2-0.4-0.4-0.4h-1.1
+		c-0.2,0-0.4,0.2-0.4,0.4v10.8c0,0.2,0.2,0.4,0.4,0.4h1.1C308,216.2,308.2,216,308.2,215.8z"/>
+	<path d="M314.6,216c0.1,0.8,0.3,1.5,0.5,2.3c0.1,0.5,0.3,0.8,1,1c0.8,0.2,1.6,0.4,2.4,0.5
+		C316.9,218.8,315.6,217.5,314.6,216z"/>
+	<path d="M329.3,219.7c0.8-0.1,1.6-0.3,2.4-0.5c0.6-0.2,0.8-0.4,1-1c0.2-0.8,0.4-1.5,0.5-2.3
+		C332.2,217.5,330.9,218.8,329.3,219.7z"/>
+	<path d="M339.1,205v2.1h-4.8c0.3,1,0.4,2,0.4,3.1c0,1.1-0.2,2.2-0.5,3.2h4.9v2.3c0,0.2,0.2,0.4,0.4,0.4h1.1
+		c0.2,0,0.4-0.2,0.4-0.4V205c0-0.2-0.2-0.4-0.4-0.4h-1.1C339.3,204.6,339.1,204.7,339.1,205z"/>
+	<path d="M323.9,199.2c3.8,0,7.2,2,9.1,5c-0.1-0.5-0.2-1-0.4-1.6c0-0.5-0.4-0.8-1-1v-4.9c0-0.2-0.2-0.4-0.4-0.4l-14.9,0
+		c0,0-0.2,0-0.3,0.1c-0.1,0.1-0.1,0.2-0.1,0.2l0,5c-0.5,0.2-0.7,0.5-0.8,1c-0.1,0.5-0.2,1-0.3,1.5
+		C316.7,201.2,320.1,199.2,323.9,199.2z"/>
+	<path d="M333.7,210.2c0-5.5-4.4-10-9.8-10c-5.4,0-9.8,4.5-9.8,10c0,5.5,4.4,10,9.8,10
+		C329.3,220.2,333.7,215.7,333.7,210.2z M316.5,210.2c0-4.1,3.3-7.4,7.4-7.4c4.1,0,7.4,3.3,7.4,7.4c0,4.1-3.3,7.4-7.4,7.4
+		C319.8,217.6,316.5,214.3,316.5,210.2z"/>
+</g>
+<g id="label_pump-01-rpm"><title>Ansteuerung der Kollektorpumpe</title>
+	<path id="frame_1_" class="st6" d="M382.2,256h-71c-1.6,0-3-1.4-3-3v-23.5c0-1.6,1.4-3,3-3h71c1.6,0,3,1.4,3,3V253
+		C385.2,254.7,383.8,256,382.2,256z"/>
+	<g id="symb_pump-01-rpm">
+		<path class="st2" d="M337.1,256h-26c-1.6,0-3-1.4-3-3v-23.5c0-1.6,1.4-3,3-3h26c1.6,0,3,1.4,3,3V253
+			C340.1,254.7,338.8,256,337.1,256z"/>
+		<g>
+			<path class="st3" d="M323.5,231.9c-7.4,0-13.5,6.1-13.5,13.5v0.5h3.5v-1H311c0.1-3.1,1.4-5.9,3.3-8l1.8,1.8l0.7-0.7l-1.8-1.8
+				c2.1-2,4.9-3.2,8-3.3v2.5h1v-2.5c3.1,0.1,5.9,1.3,8,3.3l-1.7,1.7l0.7,0.7l1.7-1.7c2,2.1,3.2,4.9,3.3,8h-2.5v1h3.5v-0.5
+				C337,238,331,231.9,323.5,231.9z"/>
+			<path class="st3" d="M321.5,247c1.7,1.7,3,0.8,3,0.8l4.2-8l-8,4.2C320.7,244,319.8,245.3,321.5,247z"/>
+		</g>
+	</g>
+</g>
+<text id="txt_pump-01-rpm" transform="matrix(1 0 0 1 362 246.8665)" class="st4 st7 st8">- %</text>
+<g id="label_operating-hours"><title>Betriebsstunden der Kollektorpumpe</title>
+	<path id="frame_3_" class="st6" d="M489.3,256h-81.8c-1.7,0-3-1.4-3-3v-23.5c0-1.6,1.3-3,3-3h81.8c1.6,0,3,1.4,3,3V253
+		C492.3,254.7,491,256,489.3,256z"/>
+	<g id="symb_operating-hours">
+		<path class="st2" d="M433.5,256h-26c-1.7,0-3-1.4-3-3v-23.5c0-1.6,1.3-3,3-3h26c1.6,0,3,1.4,3,3V253
+			C436.5,254.7,435.2,256,433.5,256z"/>
+		<g>
+			<path class="st3" d="M421.7,232.8v-1.2h0.7c0.7,0,1.3-0.6,1.3-1.3c0-0.7-0.6-1.3-1.3-1.3h-3.7c-0.7,0-1.3,0.6-1.3,1.3v0
+				c0,0.7,0.6,1.3,1.3,1.3h0.7v1.2c-5.2,0.6-9.2,5-9.2,10.3c0,5.7,4.6,10.3,10.3,10.3c5.7,0,10.3-4.6,10.3-10.3
+				C430.9,237.8,426.9,233.4,421.7,232.8z M420.6,251.7c-4.7,0-8.6-3.8-8.6-8.6c0-4.7,3.8-8.6,8.6-8.6c4.7,0,8.6,3.8,8.6,8.6
+				C429.1,247.9,425.3,251.7,420.6,251.7z"/>
+			<path class="st3" d="M420.6,236.3c-3.8,0-6.9,3.1-6.9,6.9c0,3.8,3.1,7,6.9,7c3.8,0,7-3.1,7-7
+				C427.5,239.4,424.4,236.3,420.6,236.3z M421.4,243.9h-1.5v-7.1h1.5V243.9z"/>
+		</g>
+	</g>
+</g>
+<text id="txt_operating-hours" transform="matrix(1 0 0 1 463 246.8665)" class="st4 st7 st8">- h</text>
+<g id="label_outside-temp"><title>Außentemperatur</title>
+	<path id="frame" class="st9" d="M378.9,52.6h-71c-1.6,0-3-1.4-3-3V26.1c0-1.6,1.4-3,3-3h71c1.7,0,3,1.4,3,3v23.5
+		C381.9,51.2,380.6,52.6,378.9,52.6z"/>
+	<g id="symb_outside-temp">
+		<path class="st10" d="M333.8,52.6h-26c-1.6,0-3-1.4-3-3V26.1c0-1.6,1.4-3,3-3h26c1.6,0,3,1.4,3,3v23.5
+			C336.8,51.2,335.5,52.6,333.8,52.6z"/>
+		<g>
+			<rect x="326.6" y="33.2" class="st3" width="2" height="1.3"/>
+			<rect x="326.6" y="30.8" class="st3" width="2" height="1.3"/>
+			<path class="st3" d="M331.2,37.5v-6.8c0-1.5-2.2-1.5-2.2,0v6.8c-1,0.4-1.6,1.4-1.6,2.5c0,1.5,1.2,2.7,2.7,2.7s2.7-1.2,2.7-2.7
+				C332.8,38.9,332.2,37.9,331.2,37.5z"/>
+			<rect x="326.6" y="35.6" class="st3" width="2" height="1.3"/>
+
+				<rect x="309.1" y="40.7" transform="matrix(0.7071 -0.7071 0.7071 0.7071 61.5239 231.4736)" class="st3" width="2.2" height="1.5"/>
+
+				<rect x="318.1" y="31.7" transform="matrix(0.7071 -0.7071 0.7071 0.7071 70.5103 235.198)" class="st3" width="2.2" height="1.5"/>
+			<rect x="313.9" y="29.5" class="st3" width="1.5" height="2.2"/>
+			<path class="st3" d="M321.2,36.6h-0.5v1.8h0.5c0,0,0.1,0,0.4,0c3.1,0.6,3,5.5,0.1,5.9h-9.1c-1,0-1-0.1-1.6-0.8l-1.3,1.2
+				c0,0,0.2,0.3,0.7,0.7c0.5,0.5,1.5,0.7,2.3,0.7l9.2,0c0,0,0.3,0,0.7-0.1C327.4,44.5,326.3,36.5,321.2,36.6z"/>
+
+				<rect x="309.4" y="31.4" transform="matrix(0.7071 -0.7071 0.7071 0.7071 67.8811 228.8479)" class="st3" width="1.5" height="2.2"/>
+			<rect x="307.2" y="36.2" class="st3" width="2.2" height="1.5"/>
+			<path class="st3" d="M314.7,32.2c-2.7,0-4.8,2.2-4.8,4.8s2.2,4.8,4.8,4.8s4.8-2.2,4.8-4.8S317.4,32.2,314.7,32.2z M314.7,40.1
+				c-1.7,0-3.1-1.4-3.1-3.1c0-1.7,1.4-3.1,3.1-3.1s3.1,1.4,3.1,3.1C317.8,38.7,316.4,40.1,314.7,40.1z"/>
+		</g>
+	</g>
+</g>
+<text id="txt_outside-temp" transform="matrix(1 0 0 1 359 43.3953)" class="st4 st7 st8">- °C</text>
+<g id="label_solar-temp"><title>Kollektortemperatur</title>
+	<path id="frame_2_" class="st9" d="M146.7,52.9h-71c-1.7,0-3-1.3-3-3V26.4c0-1.6,1.3-3,3-3h71c1.6,0,3,1.4,3,3v23.5
+		C149.7,51.5,148.3,52.9,146.7,52.9z"/>
+	<g id="symb_solar-temp">
+		<path class="st10" d="M101.6,52.9h-26c-1.7,0-3-1.3-3-3V26.4c0-1.6,1.3-3,3-3h26c1.7,0,3,1.4,3,3v23.5
+			C104.6,51.5,103.2,52.9,101.6,52.9z"/>
+		<g>
+			<path class="st3" d="M87.9,28.5c0.1,0.4,0.1,0.9,0,1.3c-0.2,4.2-3.8,7.5-8.1,7.3c-0.9,0-1.8-0.3-2.6-0.6l3-7.1L87.9,28.5z"/>
+			<path class="st3" d="M79,46.8l19.5-12.2c1.7-1.1,3.8,2,2.1,3L81.1,49.8C79.4,50.9,77.3,47.9,79,46.8z"/>
+			<rect x="85.5" y="36.2" transform="matrix(0.788 -0.6157 0.6157 0.788 -4.99 61.4754)" class="st3" width="2.5" height="3.6"/>
+
+				<rect x="77.4" y="38.9" transform="matrix(0.1219 -0.9925 0.9925 0.1219 29.7156 113.7972)" class="st3" width="3.6" height="2.5"/>
+
+				<rect x="89.4" y="29.3" transform="matrix(0.1218 -0.9925 0.9925 0.1218 48.6938 117.262)" class="st3" width="2.5" height="3.6"/>
+		</g>
+	</g>
+</g>
+<text id="txt_solar-temp" transform="matrix(1 0 0 1 126.5 43.7285)" class="st4 st7 st8">- °C</text>
+<g id="label_return-temp"><title>Kollektor-Rücklauftemperatur</title>
+	<path id="frame_4_" class="st9" d="M243.3,199.8h-53c-1.6,0-3-1.4-3-3v-23.5c0-1.6,1.4-3,3-3h53c1.7,0,3,1.4,3,3v23.5
+		C246.3,198.5,244.9,199.8,243.3,199.8z"/>
+	<g id="symb_return-temp">
+		<path class="st10" d="M200.3,199.8h-10c-1.6,0-3-1.4-3-3v-23.5c0-1.6,1.4-3,3-3h10c1.7,0,3,1.4,3,3v23.5
+			C203.3,198.5,201.9,199.8,200.3,199.8z"/>
+		<g>
+			<rect x="190.6" y="181" class="st3" width="2.9" height="2"/>
+			<rect x="190.6" y="177.4" class="st3" width="2.9" height="2"/>
+			<path class="st3" d="M197.6,187.5v-10.3c0-2.2-3.3-2.2-3.3,0v10.3c-1.4,0.6-2.5,2.1-2.5,3.8c0,2.3,1.8,4.1,4.1,4.1
+				c2.3,0,4.1-1.8,4.1-4.1C200,189.6,199,188.1,197.6,187.5z"/>
+			<rect x="190.6" y="184.7" class="st3" width="2.9" height="2"/>
+		</g>
+	</g>
+</g>
+<text id="txt_return-temp" transform="matrix(1 0 0 1 224 190.6718)" class="st4 st7 st8">- °C</text>
+<g id="label_flow-temp" class="stAvailable"><title>Kollektor-Vorlauftemperatur</title>
+	<path id="frame_5_" class="st9" d="M289.1,141.7h-53c-1.6,0-3-1.3-3-3v-23.5c0-1.6,1.4-3,3-3h53c1.6,0,3,1.4,3,3v23.5
+		C292.1,140.4,290.8,141.7,289.1,141.7z"/>
+	<g id="symb_flow-temp">
+		<path class="st10" d="M246.1,141.7h-10c-1.6,0-3-1.3-3-3v-23.5c0-1.6,1.4-3,3-3h10c1.6,0,3,1.4,3,3v23.5
+			C249.1,140.4,247.8,141.7,246.1,141.7z"/>
+		<g>
+			<rect x="236.5" y="122.9" class="st3" width="2.9" height="2"/>
+			<rect x="236.5" y="119.3" class="st3" width="2.9" height="2"/>
+			<path class="st3" d="M243.4,129.4v-10.3c0-2.2-3.3-2.2-3.3,0v10.3c-1.4,0.6-2.5,2.1-2.5,3.8c0,2.3,1.8,4.1,4.1,4.1
+				c2.3,0,4.1-1.8,4.1-4.1C245.9,131.5,244.9,130,243.4,129.4z"/>
+			<rect x="236.5" y="126.6" class="st3" width="2.9" height="2"/>
+		</g>
+	</g>
+</g>
+<text id="txt_flow-temp" transform="matrix(1 0 0 1 269.5 132.582)" class="st4 st7 st8 stAvailable">- °C</text>
+</svg>
