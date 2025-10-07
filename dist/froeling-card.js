@@ -186,6 +186,72 @@ class FroelingKesselCard extends BaseFroelingCard {
 
 customElements.define('froeling-kessel-card', FroelingKesselCard);
 
+class FroelingKesselOhnePelletsCard extends BaseFroelingCard {
+    constructor() {
+        super();
+        this.svgUrl = '/local/community/lovelace-froeling-card/kessel_ohne_pellets.svg';
+    }
+
+    static getStubConfig() {
+        return {
+            entities: [
+                {
+                    id: 'txt_ash-counter',
+                    entity: 'sensor.froeling_verbleibende_heizstunden_bis_zur_asche_entleeren_warnung',
+                    label: 'Verbleibende Heizstunden bis zur Entleerung des Aschebehälters'
+                },
+                {
+                    id: 'txt_fan-rpm',
+                    entity: 'sensor.froeling_saugzugdrehzahl',
+                    label: 'Drehzahl des Saugzuggebläses'
+                },
+                {
+                    id: 'txt_boiler-temp',
+                    entity: 'sensor.froeling_kesseltemperatur',
+                    label: 'Kesseltemperatur'
+                },
+                {
+                    id: 'txt_flue-gas',
+                    entity: 'sensor.froeling_abgastemperatur',
+                    label: 'Abgastemperatur'
+                },
+                {
+                    id: 'txt_lambda',
+                    entity: 'sensor.froeling_restsauerstoffgehalt',
+                    label: 'Restsauerstoffgehalt'
+                },
+                {
+                    id: 'txt_pump-01-rpm',
+                    entity: 'sensor.froeling_puffer_1_pufferpumpen_ansteuerung',
+                    label: 'Pufferpumpen Ansteuerung'
+                },
+                {
+                    id: 'obj_flame',
+                    entity: 'sensor.froeling_kesselzustand',
+                    label: 'Kesselzustand',
+                    stateClasses: {
+                        'Vorheizen': 'stHeatingOn',
+                        'Heizen': 'stHeatingOn',
+                        'SH Heizen': 'stHeatingOn',
+                        'default': 'stHeatingOff'
+                    }
+                },
+                {
+                    id: 'obj_pump',
+                    entity: 'binary_sensor.froeling_puffer_1_pumpe_an_aus',
+                    label: 'Pufferpumpe AN AUS',
+                    stateClasses: {
+                        'on': 'stPumpActive',
+                        'default': 'stPumpInActive',
+                    }
+                }
+            ]
+        };
+    }
+}
+
+customElements.define('froeling-kessel-ohne-pellets-card', FroelingKesselOhnePelletsCard);
+
 class FroelingHeizkreisCard extends BaseFroelingCard {
     constructor() {
         super();
@@ -423,6 +489,14 @@ if (window.customCards) {
             type: "froeling-kessel-card",
             name: "Froeling Kessel Card",
             description: "Visuelle Darstellung Fröling - Kessel",
+            preview: true,
+            editor: "froeling-card-editor",
+            documentationURL: "https://github.com/GyroGearl00se"
+        },
+        {
+            type: "froeling-kessel-ohne-pellets-card",
+            name: "Froeling Kessel ohne Pellets Card",
+            description: "Visuelle Darstellung Fröling - Kessel (ohne Pellets)",
             preview: true,
             editor: "froeling-card-editor",
             documentationURL: "https://github.com/GyroGearl00se"
