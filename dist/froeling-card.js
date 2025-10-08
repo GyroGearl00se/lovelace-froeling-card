@@ -196,11 +196,6 @@ class FroelingKesselOhnePelletsCard extends BaseFroelingCard {
         return {
             entities: [
                 {
-                    id: 'txt_ash-counter',
-                    entity: 'sensor.froeling_verbleibende_heizstunden_bis_zur_asche_entleeren_warnung',
-                    label: 'Verbleibende Heizstunden bis zur Entleerung des Aschebehälters'
-                },
-                {
                     id: 'txt_fan-rpm',
                     entity: 'sensor.froeling_saugzugdrehzahl',
                     label: 'Drehzahl des Saugzuggebläses'
