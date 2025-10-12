@@ -64,7 +64,6 @@ class BaseFroelingCard extends HTMLElement {
                 this._config.entities.forEach(({ entity, id, stateClasses }) => {
                     const entityState = this._hass.states[entity]?.state || 'N/A';
                     const unit = this._hass.states[entity]?.attributes?.unit_of_measurement ?? '';
-                    //this._updateSvgText(id, entityState, unit);
                     if (stateClasses) {
                         this._updateSvgStyle(id, entityState, stateClasses);
                     } else {
@@ -547,6 +546,7 @@ if (window.customCards) {
     );
 }
 
+// Card Editor
 class FroelingCardEditor extends HTMLElement {
     constructor() {
         super();
@@ -557,11 +557,10 @@ class FroelingCardEditor extends HTMLElement {
 
     set hass(hass) {
         this._hass = hass;
-        this.render();
     }
 
     setConfig(config) {
-        this._config = JSON.parse(JSON.stringify(config)); // Deep copy
+        this._config = JSON.parse(JSON.stringify(config));
         this.render();
     }
 
@@ -598,8 +597,9 @@ class FroelingCardEditor extends HTMLElement {
                         width: 100%;
                         padding: 8px;
                         box-sizing: border-box;
-                        border-radius: 25px;
-                        border: 2px solid #0288d1;
+                        border-top-left-radius: 4px;
+                        border-top-right-radius: 4px;
+                        border-bottom: 2px solid #0288d1;
                     }
                     .autocomplete-list {
                         position: absolute;
@@ -609,11 +609,11 @@ class FroelingCardEditor extends HTMLElement {
                         background: var(--card-background-color, #fff);
                         border: 1px solid #ccc;
                         border-radius: 4px;
-                        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Subtiler Schatten */
+                        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
                         max-height: 150px;
                         overflow-y: auto;
                         z-index: 10;
-                        padding: 4px 0; /* Abstand innerhalb der Liste */
+                        padding: 4px 0;
                     }
                     .autocomplete-item {
                         padding: 8px 12px;
@@ -622,7 +622,7 @@ class FroelingCardEditor extends HTMLElement {
                         transition: background 0.2s, color 0.2s;
                     }
                     .autocomplete-item:hover {
-                        background: var(--primary-color, #0288d1); /* Farbe beim Hover */
+                        background: var(--primary-color, #0288d1);
                         color: white;
                     }
                 </style>
@@ -634,7 +634,7 @@ class FroelingCardEditor extends HTMLElement {
         }
 
         const container = this.shadowRoot.querySelector('#entities');
-        container.innerHTML = ''; // Clear container
+        container.innerHTML = '';
 
         this._config.entities.forEach((entity, index) => {
             const entityContainer = document.createElement('div');
@@ -654,16 +654,16 @@ class FroelingCardEditor extends HTMLElement {
 
             const autocompleteList = document.createElement('div');
             autocompleteList.className = 'autocomplete-list';
-            autocompleteList.style.display = 'none'; // Hidden by default
+            autocompleteList.style.display = 'none';
 
             input.addEventListener('input', (e) => this._onInputChange(e, autocompleteList));
             input.addEventListener('focus', () => this._populateAutocomplete(autocompleteList));
             input.addEventListener('blur', () => {
-                setTimeout(() => autocompleteList.style.display = 'none', 200); // Hide on blur with delay
+                setTimeout(() => autocompleteList.style.display = 'none', 200);
             });
 
             autocompleteList.addEventListener('mousedown', (e) => {
-                e.preventDefault(); // Prevent losing focus
+                e.preventDefault();
                 const selectedEntity = e.target.getAttribute('data-entity');
                 if (selectedEntity) {
                     this._onAutocompleteSelect(index, selectedEntity, input, autocompleteList);
@@ -689,7 +689,7 @@ class FroelingCardEditor extends HTMLElement {
         .filter((entity) => entity.toLowerCase().includes(filter))
         .slice(0, 10);
 
-        autocompleteList.innerHTML = ''; // Clear list
+        autocompleteList.innerHTML = '';
         filteredEntities.forEach((entity) => {
             const item = document.createElement('div');
             item.className = 'autocomplete-item';
@@ -702,20 +702,15 @@ class FroelingCardEditor extends HTMLElement {
     }
 
     _onAutocompleteSelect(index, selectedEntity, input, autocompleteList) {
-        // Update config
         const updatedEntities = [...this._config.entities];
         updatedEntities[index] = { ...updatedEntities[index], entity: selectedEntity };
 
         const newConfig = { ...this._config, entities: updatedEntities };
-        this._config = newConfig; // Update local config
+        this._config = newConfig;
 
-        // Update input value
         input.value = selectedEntity;
 
-        // Hide autocomplete
         autocompleteList.style.display = 'none';
-
-        // Notify Home Assistant about the config change
         this.configChanged(newConfig);
     }
 }
