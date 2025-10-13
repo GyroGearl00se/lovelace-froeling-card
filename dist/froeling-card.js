@@ -161,37 +161,51 @@ class FroelingKesselCard extends BaseFroelingCard {
                 {
                     id: 'txt_ash-counter',
                     entity: 'sensor.froeling_verbleibende_heizstunden_bis_zur_asche_entleeren_warnung',
-                    label: 'Verbleibende Heizstunden bis zur Entleerung des Aschebehälters'
+                    label: 'Verbleibende Heizstunden bis zur Entleerung des Aschebehälters',
+                    displayId: 'ash-counter',
+                    display: 'on'
                 },
                 {
                     id: 'txt_fuel-level',
                     entity: 'sensor.froeling_fullstand_im_pelletsbehalter',
-                    label: 'Füllstand im Pelletsbehälter'
+                    label: 'Füllstand im Pelletsbehälter',
+                    displayId: 'fuel-level',
+                    display: 'on'
                 },
                 {
                     id: 'txt_fan-rpm',
                     entity: 'sensor.froeling_saugzugdrehzahl',
-                    label: 'Drehzahl des Saugzuggebläses'
+                    label: 'Drehzahl des Saugzuggebläses',
+                    displayId: 'fan-rpm',
+                    display: 'on'
                 },
                 {
                     id: 'txt_boiler-temp',
                     entity: 'sensor.froeling_kesseltemperatur',
-                    label: 'Kesseltemperatur'
+                    label: 'Kesseltemperatur',
+                    displayId: 'boiler-temp',
+                    display: 'on'
                 },
                 {
                     id: 'txt_flue-gas',
                     entity: 'sensor.froeling_abgastemperatur',
-                    label: 'Abgastemperatur'
+                    label: 'Abgastemperatur',
+                    displayId: 'flue-gas',
+                    display: 'on'
                 },
                 {
                     id: 'txt_lambda',
                     entity: 'sensor.froeling_restsauerstoffgehalt',
-                    label: 'Restsauerstoffgehalt'
+                    label: 'Restsauerstoffgehalt',
+                    displayId: 'lambda',
+                    display: 'on'
                 },
                 {
                     id: 'txt_pump-01-rpm',
                     entity: 'sensor.froeling_puffer_1_pufferpumpen_ansteuerung',
-                    label: 'Pufferpumpen Ansteuerung'
+                    label: 'Pufferpumpen Ansteuerung',
+                    displayId: 'pump-01-rpm',
+                    display: 'on'
                 },
                 {
                     id: 'obj_flame',
@@ -232,27 +246,37 @@ class FroelingKesselOhnePelletsCard extends BaseFroelingCard {
                 {
                     id: 'txt_fan-rpm',
                     entity: 'sensor.froeling_saugzugdrehzahl',
-                    label: 'Drehzahl des Saugzuggebläses'
+                    label: 'Drehzahl des Saugzuggebläses',
+                    displayId: 'fan-rpm',
+                    display: 'on'
                 },
                 {
                     id: 'txt_boiler-temp',
                     entity: 'sensor.froeling_kesseltemperatur',
-                    label: 'Kesseltemperatur'
+                    label: 'Kesseltemperatur',
+                    displayId: 'boiler-temp',
+                    display: 'on'
                 },
                 {
                     id: 'txt_flue-gas',
                     entity: 'sensor.froeling_abgastemperatur',
-                    label: 'Abgastemperatur'
+                    label: 'Abgastemperatur',
+                    displayId: 'flue-gas',
+                    display: 'on'
                 },
                 {
                     id: 'txt_lambda',
                     entity: 'sensor.froeling_restsauerstoffgehalt',
-                    label: 'Restsauerstoffgehalt'
+                    label: 'Restsauerstoffgehalt',
+                    displayId: 'lambda',
+                    display: 'on'
                 },
                 {
                     id: 'txt_pump-01-rpm',
                     entity: 'sensor.froeling_puffer_1_pufferpumpen_ansteuerung',
-                    label: 'Pufferpumpen Ansteuerung'
+                    label: 'Pufferpumpen Ansteuerung',
+                    displayId: 'pump-01-rpm',
+                    display: 'on'
                 },
                 {
                     id: 'obj_flame',
@@ -293,12 +317,16 @@ class FroelingHeizkreisCard extends BaseFroelingCard {
                 {
                     id: 'txt_outside-temp',
                     entity: 'sensor.froeling_aussentemperatur',
-                    label: 'Außentemperatur'
+                    label: 'Außentemperatur',
+                    displayId: 'outside-temp',
+                    display: 'on'
                 },
                 {
                     id: 'txt_flow-temp',
                     entity: 'sensor.froeling_hk01_vorlauf_isttemperatur',
-                    label: 'Vorlauftemperatur'
+                    label: 'Vorlauftemperatur',
+                    displayId: 'flow-temp',
+                    display: 'on'
                 },
                 {
                     id: 'obj_pump-01',
@@ -328,17 +356,23 @@ class FroelingAustragungCard extends BaseFroelingCard {
                 {
                     id: 'txt_fuel-level',
                     entity: 'sensor.froeling_fullstand_im_pelletsbehalter',
-                    label: 'Füllstand im Pelletsvorratsbehälter'
+                    label: 'Füllstand im Pelletsvorratsbehälter',
+                    displayId: 'fuel-level',
+                    display: 'on'
                 },
                 {
                     id: 'txt_consumption',
                     entity: 'sensor.froeling_pelletverbrauch_gesamt',
-                    label: 'Pelletverbrauch Gesamt'
+                    label: 'Pelletverbrauch Gesamt',
+                    displayId: 'consumption',
+                    display: 'on'
                 },
                 {
                     id: 'txt_storage-counter',
                     entity: 'number.froeling_pelletlager_restbestand',
-                    label: 'Restbestand im Brennstofflagerraum'
+                    label: 'Restbestand im Brennstofflagerraum',
+                    displayId: 'storage-counter',
+                    display: 'on'
                 }
             ]
         };
@@ -358,12 +392,16 @@ class FroelingBoilerCard extends BaseFroelingCard {
                 {
                     id: 'txt_pump-01-rpm',
                     entity: 'sensor.froeling_boiler_1_pumpe_ansteuerung',
-                    label: 'Boiler Pumpe Ansteuerung'
+                    label: 'Boiler Pumpe Ansteuerung',
+                    displayId: 'pump-01-rpm',
+                    display: 'on'
                 },
                 {
                     id: 'txt_dhw-temp',
                     entity: 'sensor.froeling_boiler_1_temperatur_oben',
-                    label: 'Boilertemperatur oben'
+                    label: 'Boilertemperatur oben',
+                    displayId: 'dhw-temp',
+                    display: 'on'
                 },
                 {
                     id: 'obj_pump-01',
@@ -392,22 +430,30 @@ class FroelingPufferCard extends BaseFroelingCard {
                 {
                     id: 'txt_pump-01-rpm',
                     entity: 'sensor.froeling_puffer_1_pufferpumpen_ansteuerung',
-                    label: 'Pufferpumpen Ansteuerung'
+                    label: 'Pufferpumpen Ansteuerung',
+                    displayId: 'pump-01-rpm',
+                    display: 'on'
                 },
                 {
                     id: 'txt_buffer-load',
                     entity: 'sensor.froeling_puffer_1_ladezustand',
-                    label: 'Ladezustand des Pufferspeichers'
+                    label: 'Ladezustand des Pufferspeichers',
+                    displayId: 'buffer-load',
+                    display: 'on'
                 },
                 {
                     id: 'txt_buffer-lower-sensor',
                     entity: 'sensor.froeling_puffer_1_temperatur_unten',
-                    label: 'Tempertaur unten im Pufferspeicher'
+                    label: 'Tempertaur unten im Pufferspeicher',
+                    displayId: 'buffer-lower-sensor',
+                    display: 'on'
                 },
                 {
                     id: 'txt_buffer-upper-sensor',
                     entity: 'sensor.froeling_puffer_1_temperatur_oben',
-                    label: 'Tempertaur oben im Pufferspeicher'
+                    label: 'Tempertaur oben im Pufferspeicher',
+                    displayId: 'buffer-upper-sensor',
+                    display: 'on'
                 },
                 {
                     id: 'obj_pump',
@@ -436,12 +482,16 @@ class FroelingZirkulationspumpeCard extends BaseFroelingCard {
                 {
                     id: 'txt_circulation-pump-rpm',
                     entity: 'sensor.froeling_drehzahl_der_zirkulations_pumpe',
-                    label: 'Ansteuerung der Zirkulationspumpe'
+                    label: 'Ansteuerung der Zirkulationspumpe',
+                    displayId: 'circulation-pump-rpm',
+                    display: 'on'
                 },
                 {
                     id: 'txt_circulation-temp',
                     entity: 'sensor.froeling_rucklauftemperatur_an_der_zirkulations_leitung',
-                    label: 'Rücklauftemperatur an der Zirkulationsleitung'
+                    label: 'Rücklauftemperatur an der Zirkulationsleitung',
+                    displayId: 'circulation-temp',
+                    display: 'on'
                 },
                 {
                     id: 'obj_pump-01',
@@ -470,32 +520,44 @@ class FroelingSolarthermieCard extends BaseFroelingCard {
                 {
                     id: 'txt_pump-01-rpm',
                     entity: 'sensor.froeling_kollektor_pumpe',
-                    label: 'Ansteuerung der Kollektorpumpe'
+                    label: 'Ansteuerung der Kollektorpumpe',
+                    displayId: 'pump-01-rpm',
+                    display: 'on'
                 },
                 {
                     id: 'txt_operating-hours',
                     entity: 'sensor.froeling_kollektor_pumpe_laufzeit',
-                    label: 'Betriebsstunden der Kollektorpumpe'
+                    label: 'Betriebsstunden der Kollektorpumpe',
+                    displayId: 'operating-hours',
+                    display: 'on'
                 },
                 {
                     id: 'txt_outside-temp',
                     entity: 'sensor.froeling_aussentemperatur',
-                    label: 'Außentemperatur'
+                    label: 'Außentemperatur',
+                    displayId: 'outside-temp',
+                    display: 'on'
                 },
                 {
                     id: 'txt_solar-temp',
                     entity: 'sensor.froeling_kollektortemperatur',
-                    label: 'Kollektortemperatur'
+                    label: 'Kollektortemperatur',
+                    displayId: 'solar-temp',
+                    display: 'on'
                 },
                 {
                     id: 'txt_return-temp',
                     entity: 'sensor.froeling_kollektor_rueklauftemperatur',
-                    label: 'Kollektor-Rücklauftemperatur'
+                    label: 'Kollektor-Rücklauftemperatur',
+                    displayId: 'return-temp',
+                    display: 'on'
                 },
                 {
                     id: 'txt_flow-temp',
                     entity: 'sensor.froeling_kollektor_vorlauftemperatur',
-                    label: 'Kollektor-Vorlauftemperatur'
+                    label: 'Kollektor-Vorlauftemperatur',
+                    displayId: 'flow-temp',
+                    display: 'on'
                 },
                 {
                     id: 'obj_pump-01',
