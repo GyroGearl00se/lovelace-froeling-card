@@ -39,13 +39,21 @@ class BaseFroelingCard extends HTMLElement {
                 const unit = this._hass.states[entity]?.attributes?.unit_of_measurement ?? '';
 
                 // Only update text for elements that are intended to display text
-                if (id.startsWith('txt_')) {
+                if (id && id.startsWith('txt_')) {
                     this._updateSvgText(id, entityState, unit);
                 }
 
                 // Update styles if stateClasses are defined
                 if (stateClasses) {
                     this._updateSvgStyle(id, entityState, stateClasses);
+                }
+
+                // Support display toggles
+                const displayId = this._getEntityPropForId(id, 'displayId');
+                const display = this._getEntityPropForId(id, 'display');
+
+                if (displayId) {
+                    this._updateDisplay(displayId, display);
                 }
             });
         }
@@ -68,6 +76,13 @@ class BaseFroelingCard extends HTMLElement {
                         this._updateSvgStyle(id, entityState, stateClasses);
                     } else {
                         this._updateSvgText(id, entityState, unit);
+                    }
+                    if (this._config.entities) {
+                        const displayId = this._getEntityPropForId(id, 'displayId');
+                        const display = this._getEntityPropForId(id, 'display');
+                        if (displayId) {
+                            this._updateDisplay(displayId, display);
+                        }
                     }
                 });
             }
@@ -102,6 +117,26 @@ class BaseFroelingCard extends HTMLElement {
         } else {
             console.warn(`SVG-Element mit ID '${id}' nicht gefunden.`);
         }
+    }
+
+    _getEntityPropForId(id, prop) {
+        if (!this._config || !Array.isArray(this._config.entities)) return undefined;
+        const entry = this._config.entities.find(e => e.id === id);
+        return entry ? entry[prop] : undefined;
+    }
+
+    _updateDisplay(displayId, display) {
+        const svgElement = this.shadowRoot.querySelector(`#${displayId}`);
+        if (!svgElement) {
+            console.warn(`SVG-Element für Display mit ID '${displayId}' nicht gefunden.`);
+            return;
+        }
+
+        // Normalize display to boolean
+        const isOn = (display === true) || (String(display).toLowerCase() === 'on') || (String(display).toLowerCase() === 'true');
+
+        svgElement.classList.remove('displayOn', 'displayOff');
+        svgElement.classList.add(isOn ? 'displayOn' : 'displayOff');
     }
 
     getCardSize() {
@@ -625,6 +660,53 @@ class FroelingCardEditor extends HTMLElement {
                         background: var(--primary-color, #0288d1);
                         color: white;
                     }
+                    .switch {
+                        position: relative;
+                        display: inline-block;
+                        width: 50px;
+                        height: 24px;
+                        vertical-align: middle;
+                        margin-right: 8px;
+                        margin-top: 10px;
+                    }
+
+                    .switch input {
+                        opacity: 0;
+                        width: 0;
+                        height: 0;
+                    }
+
+                    .slider {
+                        position: absolute;
+                        cursor: pointer;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background-color: #ccc;
+                        transition: .2s;
+                        border-radius: 24px;
+                    }
+
+                    .slider:before {
+                        position: absolute;
+                        content: "";
+                        height: 18px;
+                        width: 18px;
+                        left: 3px;
+                        bottom: 3px;
+                        background-color: white;
+                        transition: .2s;
+                        border-radius: 50%;
+                    }
+
+                    input:checked + .slider {
+                        background-color: var(--primary-color, #0288d1);
+                    }
+
+                    input:checked + .slider:before {
+                        transform: translateX(26px);
+                    }
                 </style>
                 <div class="card-config">
                     <h3>Entities</h3>
@@ -652,6 +734,28 @@ class FroelingCardEditor extends HTMLElement {
             input.value = entity.entity || '';
             input.dataset.index = index;
 
+            let switchWrapper = null;
+            let switchInput = null;
+            if (entity.displayId) {
+                switchWrapper = document.createElement('label');
+                switchWrapper.className = 'switch';
+                switchWrapper.style.marginLeft = '8px';
+
+                switchInput = document.createElement('input');
+                switchInput.type = 'checkbox';
+                switchInput.id = `display-${index}`;
+                switchInput.checked = entity.display === 'on' || entity.display === true;
+                switchInput.dataset.index = index;
+
+                const switchSlider = document.createElement('span');
+                switchSlider.className = 'slider';
+
+                switchWrapper.appendChild(switchInput);
+                switchWrapper.appendChild(switchSlider);
+
+                switchInput.addEventListener('change', (e) => this._onDisplayToggleChange(e));
+            }
+
             const autocompleteList = document.createElement('div');
             autocompleteList.className = 'autocomplete-list';
             autocompleteList.style.display = 'none';
@@ -672,8 +776,27 @@ class FroelingCardEditor extends HTMLElement {
 
             entityContainer.appendChild(input);
             entityContainer.appendChild(autocompleteList);
+            if (switchWrapper) {
+                const displayLabelEl = document.createElement('label');
+                displayLabelEl.textContent = 'Display';
+                displayLabelEl.style.display = 'inline-block';
+                displayLabelEl.style.marginLeft = '6px';
+
+                entityContainer.appendChild(switchWrapper);
+                entityContainer.appendChild(displayLabelEl);
+            }
             container.appendChild(entityContainer);
         });
+    }
+
+    _onDisplayToggleChange(event) {
+        const index = Number(event.target.dataset.index);
+        const checked = event.target.checked;
+        const updatedEntities = [...this._config.entities];
+        updatedEntities[index] = { ...updatedEntities[index], display: checked ? 'on' : 'off' };
+        const newConfig = { ...this._config, entities: updatedEntities };
+        this._config = newConfig;
+        this.configChanged(newConfig);
     }
 
     _onInputChange(event, autocompleteList) {
