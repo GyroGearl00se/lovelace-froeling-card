@@ -21,6 +21,7 @@
 	.st8{fill:#CCCCCC;}
 	.st9{fill:#646464;}	.st10{font-family:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Roboto,Arial,Helvetica,sans-serif;font-specification:'Roboto,Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;}
 	.st11{font-size:14px;}
+	.displayOff{display:none}
 </style>
 <polyline id="room" class="st0" points="149.9,122.6 265.6,36.5 381.3,122.6 381.3,247.9 "/>
 <path id="flow-temp-sensor" class="st1" d="M143.1,205.5c0-0.7-0.5-1.3-1-1.3h-13c-0.5,0-1,0.6-1,1.3v3.8h15V205.5z"/>

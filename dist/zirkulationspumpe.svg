@@ -19,6 +19,7 @@
 	.st11{font-size:14px;}
 	.st12{fill:#FFFFFF;stroke:#CCCCCC;stroke-miterlimit:10;}
 	.st13{fill:#CCCCCC;}
+	.displayOff{display:none}
 </style>
 <g id="obj_pump-01" class="stPumpInActive"><title>Status der Zirkulationspumpe</title>
 	<path d="M257.7,66.1c0-1.8,1.5-3.3,3.3-3.3c1.8,0,3.3,1.5,3.3,3.3c0,1.8-1.5,3.3-3.3,3.3   C259.2,69.4,257.7,67.9,257.7,66.1z"/>

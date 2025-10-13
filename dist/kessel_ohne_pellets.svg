@@ -57,6 +57,7 @@
 	.st9{fill:#323232;}	.st10{font-family:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Roboto,Arial,Helvetica,sans-serif;font-specification:'Roboto,Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;}
 	.st11{font-size:14px;}
 	.st12{fill:#FFFFFF;stroke:#C8C8C8;stroke-width:0.9237;stroke-miterlimit:10;}
+   .displayOff{display:none}
 </style>
 <path
    id="boiler-return-02"

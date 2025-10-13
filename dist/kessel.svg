@@ -21,6 +21,7 @@
 	.st9{fill:#323232;}	.st10{font-family:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Roboto,Arial,Helvetica,sans-serif;font-specification:'Roboto,Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;}
 	.st11{font-size:14px;}
 	.st12{fill:#FFFFFF;stroke:#C8C8C8;stroke-width:0.9237;stroke-miterlimit:10;}
+	.displayOff{display:none}
 </style>
 <path id="boiler-return-02" class="st0" d="M271.7,179h-1.1c-0.2,0-0.4,0.2-0.4,0.4v2.2H205l0,6h65.2v2.4c0,0.2,0.2,0.4,0.4,0.4h1.1  c0.2,0,0.4-0.2,0.4-0.4v-10.5C272.1,179.2,271.9,179,271.7,179z M240.8,186.8l-4.8-2.2l4.8-2.2V186.8z"/>
 <path id="boiler-return-01" class="st0" d="M310,181.8v-2.4c0-0.2-0.2-0.4-0.4-0.4h-1.1c-0.2,0-0.4,0.2-0.4,0.4V190  c0,0.2,0.2,0.4,0.4,0.4h1.1c0.2,0,0.4-0.2,0.4-0.4v-2.2h65.1l0-6H310z M343,186.8l-4.8-2.2l4.8-2.2V186.8z"/>

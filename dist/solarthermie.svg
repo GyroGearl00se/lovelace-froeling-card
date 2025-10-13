@@ -20,6 +20,7 @@
 	.st8{font-size:14px;}
 	.st9{fill:#FFFFFF;stroke:#CCCCCC;stroke-miterlimit:10;}
 	.st10{fill:#CCCCCC;}
+	.displayOff{display:none}
 </style>
 <polygon id="return-direction" class="st0" points="578.6,207.4 567.3,207.4 567.3,201.4 551.8,210.4 567.3,219.3 567.3,213.4
 	578.5,213.4 "/>

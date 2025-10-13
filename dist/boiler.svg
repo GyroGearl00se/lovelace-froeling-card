@@ -17,6 +17,7 @@
 	.st7{fill:#646464;}
 	.st8{fill:#323232;}	.st9{font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Roboto,Arial,Helvetica,sans-serif;font-specification:'Roboto,Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;}
 	.st10{font-size:14px;}
+	.displayOff{display:none}
 </style>
 <path id="return-line-02" class="stColdWater" d="M137.7,202v-2.4c0-0.2-0.2-0.4-0.4-0.4h-1.1c-0.2,0-0.4,0.2-0.4,0.4v10.5  c0,0.2,0.2,0.4,0.4,0.4h1.1c0.2,0,0.4-0.2,0.4-0.4V208h85.1l0-6H137.7z M181.4,207.1l-4.8-2.2l4.8-2.2V207.1z"/>
 <path id="return-line-01" class="stColdWater" d="M99.4,199.2h-1.1c-0.2,0-0.4,0.2-0.4,0.4v2.2H12.7l0,6h85.2v2.4c0,0.2,0.2,0.4,0.4,0.4h1.1  c0.2,0,0.4-0.2,0.4-0.4v-10.5C99.8,199.4,99.6,199.2,99.4,199.2z M54.9,207.1l-4.8-2.2l4.8-2.2V207.1z"/>
