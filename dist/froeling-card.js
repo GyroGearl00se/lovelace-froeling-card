@@ -449,6 +449,13 @@ class FroelingPufferCard extends BaseFroelingCard {
                     display: 'on'
                 },
                 {
+                    id: 'txt_buffer-middle-sensor',
+                    entity: 'sensor.froeling_puffer_1_temperatur_mitte',
+                    label: 'Tempertaur mitte im Pufferspeicher',
+                    displayId: 'buffer-middle-sensor',
+                    display: 'on'
+                },
+                {
                     id: 'txt_buffer-upper-sensor',
                     entity: 'sensor.froeling_puffer_1_temperatur_oben',
                     label: 'Tempertaur oben im Pufferspeicher',
