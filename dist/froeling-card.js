@@ -234,6 +234,40 @@ class FroelingKesselCard extends BaseFroelingCard {
 
 customElements.define('froeling-kessel-card', FroelingKesselCard);
 
+class FroelingZweitKesselCard extends BaseFroelingCard {
+    constructor() {
+        super();
+        this.svgUrl = '/local/community/lovelace-froeling-card/kessel2.svg';
+    }
+
+    static getStubConfig() {
+        return {
+            entities: [
+                {
+                    id: 'txt_boiler2-temp',
+                    entity: 'sensor.froeling_zweitkessel_temperatur',
+                    label: 'Zweitkessel Temperatur',
+                    displayId: 'boiler2-temp',
+                    display: 'on'
+                },
+                {
+                    id: 'obj_flame',
+                    entity: 'sensor.froeling_zweitkessel_zustand',
+                    label: 'Zweitkessel Zustand',
+                    stateClasses: {
+                        'Vorheizen': 'stHeatingOn',
+                        'Heizen': 'stHeatingOn',
+                        'SH Heizen': 'stHeatingOn',
+                        'default': 'stHeatingOff'
+                    }
+                }
+            ]
+        };
+    }
+}
+
+customElements.define('froeling-zweitkessel-card', FroelingZweitKesselCard);
+
 class FroelingKesselOhnePelletsCard extends BaseFroelingCard {
     constructor() {
         super();
@@ -587,6 +621,14 @@ if (window.customCards) {
             type: "froeling-kessel-card",
             name: "Froeling Kessel Card",
             description: "Visuelle Darstellung Fröling - Kessel",
+            preview: true,
+            editor: "froeling-card-editor",
+            documentationURL: "https://github.com/GyroGearl00se"
+        },
+        {
+            type: "froeling-zweitkessel-card",
+            name: "Froeling Zweitkessel Card",
+            description: "Visuelle Darstellung Fröling - Zweitkessel",
             preview: true,
             editor: "froeling-card-editor",
             documentationURL: "https://github.com/GyroGearl00se"
