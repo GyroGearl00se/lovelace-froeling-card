@@ -356,6 +356,13 @@ class FroelingHeizkreisCard extends BaseFroelingCard {
                     display: 'on'
                 },
                 {
+                    id: 'txt_room-temp',
+                    entity: 'sensor.froeling_raumtemperatur',
+                    label: 'Raumtemperatur',
+                    displayId: 'room-temp',
+                    display: 'on'
+                },
+                {
                     id: 'txt_flow-temp',
                     entity: 'sensor.froeling_hk01_vorlauf_isttemperatur',
                     label: 'Vorlauftemperatur',
