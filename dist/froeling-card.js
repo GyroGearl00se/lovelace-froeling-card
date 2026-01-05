@@ -167,7 +167,7 @@ class FroelingKesselCard extends BaseFroelingCard {
                 },
                 {
                     id: 'txt_fuel-level',
-                    entity: 'sensor.froeling_fullstand_im_pelletsbehalter',
+                    entity: 'sensor.froeling_fuellstand_im_pelletsbehaelter',
                     label: 'Füllstand im Pelletsbehälter',
                     displayId: 'fuel-level',
                     display: 'on'
@@ -396,7 +396,7 @@ class FroelingAustragungCard extends BaseFroelingCard {
             entities: [
                 {
                     id: 'txt_fuel-level',
-                    entity: 'sensor.froeling_fullstand_im_pelletsbehalter',
+                    entity: 'sensor.froeling_fuellstand_im_pelletsbehaelter',
                     label: 'Füllstand im Pelletsvorratsbehälter',
                     displayId: 'fuel-level',
                     display: 'on'
