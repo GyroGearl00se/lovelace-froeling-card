@@ -30,6 +30,7 @@ class BaseFroelingCard extends HTMLElement {
 
     set hass(hass) {
         this._hass = hass;
+        currentLang = hass.language || hass.locale?.language;
         if (!this._svgLoaded || !this._config?.entities) return;
         this._updateAll();
     }
@@ -68,15 +69,15 @@ class BaseFroelingCard extends HTMLElement {
     }
 
     _updateSvgStyle(id, state, stateClasses) {
-    const el = this.shadowRoot.querySelector(`#${id}`);
-    if (!el) return;
+        const el = this.shadowRoot.querySelector(`#${id}`);
+        if (!el) return;
 
-    [...el.classList]
-        .filter(c => c.startsWith("st"))
-        .forEach(c => el.classList.remove(c));
+        [...el.classList]
+            .filter(c => c.startsWith("st"))
+            .forEach(c => el.classList.remove(c));
 
-    const cls = stateClasses[state] || stateClasses.default;
-    if (cls) el.classList.add(cls);
+        const cls = stateClasses[state] || stateClasses.default;
+        if (cls) el.classList.add(cls);
     }
 
 
@@ -94,6 +95,84 @@ class BaseFroelingCard extends HTMLElement {
     }
 }
 
+let currentLang = 'en';
+const TRANSLATIONS = {
+    'de': {
+        'kessel': 'Kessel',
+        'kesseltemperatur': 'Kesseltemperatur',
+        'abgastemperatur': 'Abgastemperatur',
+        'restsauerstoff': 'Restsauerstoff',
+        'saugzuggeblaese': 'Saugzuggebläse',
+        'kesselzustand': 'Kesselzustand',
+        'pufferpumpe': 'Pufferpumpe',
+        'zweitkessel': 'Zweitkessel',
+        'zweitkessel-zustand': 'Zweitkessel Zustand',
+        'pumpen-ansteuerung': 'Pumpen-Ansteuerung',
+        'heizkreis': 'Heizkreis',
+        'aussentemperatur': 'Außentemperatur',
+        'raumtemperatur': 'Raumtemperatur',
+        'vorlauftemperatur': 'Vorlauftemperatur',
+        'heizkreispumpe': 'Heizkreispumpe',
+        'austragung': 'Austragung',
+        'pellet-fuellstand': 'Pellet-Füllstand',
+        'pelletverbrauch': 'Pelletverbrauch',
+        'restbestand-lager': 'Restbestand Lager',
+        'boilertemperatur-oben': 'Boilertemperatur oben',
+        'boilerpumpe': 'Boilerpumpe',
+        'boiler': 'Boiler',
+        'pufferspeicher': 'Pufferspeicher',
+        'temperatur-oben': 'Temperatur oben',
+        'temperatur-mitte': 'Temperatur Mitte',
+        'temperatur-unten': 'Temperatur unten',
+        'ladezustand': 'Ladezustand',
+        'zirkulationspumpe': 'Zirkulationspumpe',
+        'rucklauftemperatur': 'Rücklauftemperatur',
+        'solarthermie': 'Solarthermie',
+        'kollektortemperatur': 'Kollektortemperatur',
+        'betriebsstunden': 'Betriebsstunden',
+        'kollektorpumpe': 'Kollektorpumpe',
+    },
+    'en': {
+        'kessel': 'Boiler',
+        'kesseltemperatur': 'Boiler Temperature',
+        'abgastemperatur': 'Flue Gas Temperature',
+        'restsauerstoff': 'Residual Oxygen',
+        'saugzuggeblaese': 'Induced Draft Fan',
+        'kesselzustand': 'Boiler State',
+        'pufferpumpe': 'Buffer Pump',
+        'zweitkessel': 'Second Boiler',
+        'zweitkessel-zustand': 'Second Boiler State',
+        'pumpen-ansteuerung': 'Pump Control',
+        'heizkreis': 'Heating Circuit',
+        'aussentemperatur': 'Outside Temperature',
+        'raumtemperatur': 'Room Temperature',
+        'vorlauftemperatur': 'Flow Temperature',
+        'heizkreispumpe': 'Heating Circuit Pump',
+        'austragung': 'Discharge',
+        'pellet-fuellstand': 'Pellet Level',
+        'pelletverbrauch': 'Pellet Consumption',
+        'restbestand-lager': 'Remaining Stock in Storage',
+        'boilertemperatur-oben': 'Boiler Temperature Top',
+        'boilerpumpe': 'Boiler Pump',
+        'boiler': 'Boiler',
+        'pufferspeicher': 'Buffer Tank',
+        'temperatur-oben': 'Temperature Top',
+        'temperatur-mitte': 'Temperature Middle',
+        'temperatur-unten': 'Temperature Bottom',
+        'ladezustand': 'Charge Level',
+        'zirkulationspumpe': 'Circulation Pump',
+        'rucklauftemperatur': 'Return Temperature',
+        'solarthermie': 'Solar Thermal',
+        'kollektortemperatur': 'Collector Temperature',
+        'betriebsstunden': 'Operating Hours',
+        'kollektorpumpe': 'Collector Pump',
+    }
+};
+
+const t = (key) => {
+    const lang = currentLang.split('-')[0];
+    return TRANSLATIONS[lang]?.[key] || TRANSLATIONS['en']?.[key] || key;
+};
 // SCHEMA HELPERS
 
 // Text / Sensor Entity
@@ -262,17 +341,17 @@ class FroelingKesselCard extends BaseFroelingCard {
     static getConfigForm() {
         return {
             schema: [
-                entityGroup("entities", "Kessel", [
-                    textEntity("txt_boiler-temp", "Kesseltemperatur"),
-                    textEntity("txt_flue-gas", "Abgastemperatur"),
-                    textEntity("txt_lambda", "Restsauerstoff"),
-                    textEntity("txt_fan-rpm", "Saugzuggebläse"),
+                entityGroup("entities", t("kessel"), [
+                    textEntity("txt_boiler-temp", t("kesseltemperatur")),
+                    textEntity("txt_flue-gas", t("abgastemperatur")),
+                    textEntity("txt_lambda", t("restsauerstoff")),
+                    textEntity("txt_fan-rpm", t("saugzuggeblaese")),
                     stateEntity(
                         "obj_flame",
-                        "Kesselzustand",
+                        t("kesselzustand"),
                         ["Vorheizen", "Heizen", "SH Heizen"]
                     ),
-                    binaryEntity("obj_pump", "Pufferpumpe"),
+                    binaryEntity("obj_pump", t("pufferpumpe")),
                 ]),
             ],
         };
@@ -312,11 +391,11 @@ class FroelingZweitKesselCard extends BaseFroelingCard {
     static getConfigForm() {
         return {
             schema: [
-                entityGroup("entities", "Zweitkessel", [
+                entityGroup("entities", t("zweitkessel"), [
                     textEntity("txt_boiler2-temp", "Zweitkessel Temperatur"),
                     stateEntity(
                         "obj_flame",
-                        "Zweitkessel Zustand",
+                        t("zweitkessel-zustand"),
                         ["Vorheizen", "Heizen", "SH Heizen"]
                     ),
                 ]),
@@ -385,18 +464,18 @@ class FroelingKesselOhnePelletsCard extends BaseFroelingCard {
     static getConfigForm() {
         return {
             schema: [
-                entityGroup("entities", "Kessel", [
-                    textEntity("txt_boiler-temp", "Kesseltemperatur"),
-                    textEntity("txt_flue-gas", "Abgastemperatur"),
-                    textEntity("txt_lambda", "Restsauerstoff"),
-                    textEntity("txt_fan-rpm", "Saugzuggebläse"),
-                    textEntity("txt_pump-01-rpm", "Pumpen-Ansteuerung"),
+                entityGroup("entities", t("kessel"), [
+                    textEntity("txt_boiler-temp", t("kesseltemperatur")),
+                    textEntity("txt_flue-gas", t("abgastemperatur")),
+                    textEntity("txt_lambda", t("restsauerstoff")),
+                    textEntity("txt_fan-rpm", t("saugzuggeblaese")),
+                    textEntity("txt_pump-01-rpm", t("pumpen-ansteuerung")),
                     stateEntity(
                         "obj_flame",
-                        "Kesselzustand",
+                        t("kesselzustand"),
                         ["Vorheizen", "Heizen", "SH Heizen"]
                     ),
-                    binaryEntity("obj_pump", "Pufferpumpe"),
+                    binaryEntity("obj_pump", t("pufferpumpe")),
                 ]),
             ],
         };
@@ -443,11 +522,11 @@ class FroelingHeizkreisCard extends BaseFroelingCard {
     static getConfigForm() {
         return {
             schema: [
-                entityGroup("entities", "Heizkreis", [
-                    textEntity("txt_outside-temp", "Außentemperatur"),
-                    textEntity("txt_room-temp", "Raumtemperatur"),
-                    textEntity("txt_flow-temp", "Vorlauftemperatur"),
-                    binaryEntity("obj_pump-01", "Heizkreispumpe"),
+                entityGroup("entities", t("heizkreis"), [
+                    textEntity("txt_outside-temp", t("aussentemperatur")),
+                    textEntity("txt_room-temp", t("raumtemperatur")),
+                    textEntity("txt_flow-temp", t("vorlauftemperatur")),
+                    binaryEntity("obj_pump-01", t("heizkreispumpe")),
                 ]),
             ],
         };
@@ -488,10 +567,10 @@ class FroelingAustragungCard extends BaseFroelingCard {
     static getConfigForm() {
         return {
             schema: [
-                entityGroup("entities", "Austragung", [
-                    textEntity("txt_fuel-level", "Pellet-Füllstand"),
-                    textEntity("txt_consumption", "Pelletverbrauch"),
-                    textEntity("txt_storage-counter", "Restbestand Lager"),
+                entityGroup("entities", t("austragung"), [
+                    textEntity("txt_fuel-level", t("pellet-fuellstand")),
+                    textEntity("txt_consumption", t("pelletverbrauch")),
+                    textEntity("txt_storage-counter", t("restbestand-lager")),
                 ]),
             ],
         };
@@ -533,10 +612,10 @@ class FroelingBoilerCard extends BaseFroelingCard {
     static getConfigForm() {
         return {
             schema: [
-                entityGroup("entities", "Boiler", [
-                    textEntity("txt_dhw-temp", "Boilertemperatur oben"),
-                    textEntity("txt_pump-01-rpm", "Pumpen-Ansteuerung"),
-                    binaryEntity("obj_pump-01", "Boilerpumpe"),
+                entityGroup("entities", t("boiler"), [
+                    textEntity("txt_dhw-temp", t("boilertemperatur-oben")),
+                    textEntity("txt_pump-01-rpm", t("pumpen-ansteuerung")),
+                    binaryEntity("obj_pump-01", t("boilerpumpe")),
                 ]),
             ],
         };
@@ -593,13 +672,13 @@ class FroelingPufferCard extends BaseFroelingCard {
     static getConfigForm() {
         return {
             schema: [
-                entityGroup("entities", "Pufferspeicher", [
-                    textEntity("txt_buffer-upper-sensor", "Temperatur oben"),
-                    textEntity("txt_buffer-middle-sensor", "Temperatur Mitte"),
-                    textEntity("txt_buffer-lower-sensor", "Temperatur unten"),
-                    textEntity("txt_buffer-load", "Ladezustand"),
-                    textEntity("txt_pump-01-rpm", "Pumpen-Ansteuerung"),
-                    binaryEntity("obj_pump", "Pufferpumpe"),
+                entityGroup("entities", t("pufferspeicher"), [
+                    textEntity("txt_buffer-upper-sensor", t("temperatur-oben")),
+                    textEntity("txt_buffer-middle-sensor", t("temperatur-mitte")),
+                    textEntity("txt_buffer-lower-sensor", t("temperatur-unten")),
+                    textEntity("txt_buffer-load", t("ladezustand")),
+                    textEntity("txt_pump-01-rpm", t("pumpen-ansteuerung")),
+                    binaryEntity("obj_pump", t("pufferpumpe")),
                 ]),
             ],
         };
@@ -640,10 +719,10 @@ class FroelingZirkulationspumpeCard extends BaseFroelingCard {
     static getConfigForm() {
         return {
             schema: [
-                entityGroup("entities", "Zirkulationspumpe", [
-                    textEntity("txt_circulation-temp", "Rücklauftemperatur"),
-                    textEntity("txt_circulation-pump-rpm", "Pumpen-Ansteuerung"),
-                    binaryEntity("obj_pump-01", "Zirkulationspumpe"),
+                entityGroup("entities", t("zirkulationspumpe"), [
+                    textEntity("txt_circulation-temp", t("rucklauftemperatur")),
+                    textEntity("txt_circulation-pump-rpm", t("pumpen-ansteuerung")),
+                    binaryEntity("obj_pump-01", t("zirkulationspumpe")),
                 ]),
             ],
         };
@@ -705,14 +784,14 @@ class FroelingSolarthermieCard extends BaseFroelingCard {
     static getConfigForm() {
         return {
             schema: [
-                entityGroup("entities", "Solarthermie", [
-                    textEntity("txt_outside-temp", "Außentemperatur"),
-                    textEntity("txt_solar-temp", "Kollektortemperatur"),
-                    textEntity("txt_flow-temp", "Vorlauftemperatur"),
-                    textEntity("txt_return-temp", "Rücklauftemperatur"),
-                    textEntity("txt_operating-hours", "Betriebsstunden"),
-                    textEntity("txt_pump-01-rpm", "Pumpen-Ansteuerung"),
-                    binaryEntity("obj_pump-01", "Kollektorpumpe"),
+                entityGroup("entities", t("solarthermie"), [
+                    textEntity("txt_outside-temp", t("aussentemperatur")),
+                    textEntity("txt_solar-temp", t("kollektortemperatur")),
+                    textEntity("txt_flow-temp", t("vorlauftemperatur")),
+                    textEntity("txt_return-temp", t("rucklauftemperatur")),
+                    textEntity("txt_operating-hours", t("betriebsstunden")),
+                    textEntity("txt_pump-01-rpm", t("pumpen-ansteuerung")),
+                    binaryEntity("obj_pump-01", t("kollektorpumpe")),
                 ]),
             ],
         };
