@@ -123,6 +123,8 @@ const TRANSLATIONS = {
         'pufferspeicher': 'Pufferspeicher',
         'temperatur-oben': 'Temperatur oben',
         'temperatur-mitte': 'Temperatur Mitte',
+        'temperatur-mitte-2': 'Temperatur Mitte 2',
+        'temperatur-mitte-3': 'Temperatur Mitte 3',
         'temperatur-unten': 'Temperatur unten',
         'ladezustand': 'Ladezustand',
         'zirkulationspumpe': 'Zirkulationspumpe',
@@ -131,6 +133,7 @@ const TRANSLATIONS = {
         'kollektortemperatur': 'Kollektortemperatur',
         'betriebsstunden': 'Betriebsstunden',
         'kollektorpumpe': 'Kollektorpumpe',
+        'heizkreis_betriebsmodus': 'Heizkreis Betriebsmodus',
     },
     'en': {
         'kessel': 'Boiler',
@@ -158,6 +161,8 @@ const TRANSLATIONS = {
         'pufferspeicher': 'Buffer Tank',
         'temperatur-oben': 'Temperature Top',
         'temperatur-mitte': 'Temperature Middle',
+        'temperatur-mitte-2': 'Temperature Middle 2',
+        'temperatur-mitte-3': 'Temperature Middle 3',
         'temperatur-unten': 'Temperature Bottom',
         'ladezustand': 'Charge Level',
         'zirkulationspumpe': 'Circulation Pump',
@@ -166,6 +171,7 @@ const TRANSLATIONS = {
         'kollektortemperatur': 'Collector Temperature',
         'betriebsstunden': 'Operating Hours',
         'kollektorpumpe': 'Collector Pump',
+        'heizkreis_betriebsmodus': 'Heating Circuit Operating Mode',
     }
 };
 
@@ -321,9 +327,11 @@ class FroelingKesselCard extends BaseFroelingCard {
                 'obj_flame': {
                     entity: 'sensor.froeling_kesselzustand',
                     stateClasses: {
-                        'Vorheizen': 'stHeatingOn',
+                        'Vorheizen': 'st4',
                         'Heizen': 'stHeatingOn',
                         'SH Heizen': 'stHeatingOn',
+                        'Feuererhaltung': 'st6',
+                        'Feuer Aus': 'st9',
                         'default': 'stHeatingOff'
                     }
                 },
@@ -346,11 +354,7 @@ class FroelingKesselCard extends BaseFroelingCard {
                     textEntity("txt_flue-gas", t("abgastemperatur")),
                     textEntity("txt_lambda", t("restsauerstoff")),
                     textEntity("txt_fan-rpm", t("saugzuggeblaese")),
-                    stateEntity(
-                        "obj_flame",
-                        t("kesselzustand"),
-                        ["Vorheizen", "Heizen", "SH Heizen"]
-                    ),
+                    stateEntity("obj_flame", t("kesselzustand"), ["Vorheizen", "Heizen", "SH Heizen", "Feuererhaltung", "Feuer Aus"]),
                     binaryEntity("obj_pump", t("pufferpumpe")),
                 ]),
             ],
@@ -378,11 +382,13 @@ class FroelingZweitKesselCard extends BaseFroelingCard {
                 'obj_flame': {
                     entity: 'sensor.froeling_zweitkessel_zustand',
                     stateClasses: {
-                        'Vorheizen': 'stHeatingOn',
+                        'Vorheizen': 'st4',
                         'Heizen': 'stHeatingOn',
                         'SH Heizen': 'stHeatingOn',
-                        'default': 'stHeatingOff',
-                    },
+                        'Feuererhaltung': 'st6',
+                        'Feuer Aus': 'st9',
+                        'default': 'stHeatingOff'
+                    }
                 },
             },
         };
@@ -393,11 +399,7 @@ class FroelingZweitKesselCard extends BaseFroelingCard {
             schema: [
                 entityGroup("entities", t("zweitkessel"), [
                     textEntity("txt_boiler2-temp", "Zweitkessel Temperatur"),
-                    stateEntity(
-                        "obj_flame",
-                        t("zweitkessel-zustand"),
-                        ["Vorheizen", "Heizen", "SH Heizen"]
-                    ),
+                    stateEntity("obj_flame", t("zweitkessel-zustand"), ["Vorheizen", "Heizen", "SH Heizen", "Feuererhaltung", "Feuer Aus"]),
                 ]),
             ],
         };
@@ -444,11 +446,13 @@ class FroelingKesselOhnePelletsCard extends BaseFroelingCard {
                 'obj_flame': {
                     entity: 'sensor.froeling_kesselzustand',
                     stateClasses: {
-                        'Vorheizen': 'stHeatingOn',
+                        'Vorheizen': 'st4',
                         'Heizen': 'stHeatingOn',
                         'SH Heizen': 'stHeatingOn',
-                        'default': 'stHeatingOff',
-                    },
+                        'Feuererhaltung': 'st6',
+                        'Feuer Aus': 'st9',
+                        'default': 'stHeatingOff'
+                    }
                 },
                 'obj_pump': {
                     entity: 'binary_sensor.froeling_puffer_1_pumpe_an_aus',
@@ -470,11 +474,7 @@ class FroelingKesselOhnePelletsCard extends BaseFroelingCard {
                     textEntity("txt_lambda", t("restsauerstoff")),
                     textEntity("txt_fan-rpm", t("saugzuggeblaese")),
                     textEntity("txt_pump-01-rpm", t("pumpen-ansteuerung")),
-                    stateEntity(
-                        "obj_flame",
-                        t("kesselzustand"),
-                        ["Vorheizen", "Heizen", "SH Heizen"]
-                    ),
+                    stateEntity("obj_flame", t("kesselzustand"), ["Vorheizen", "Heizen", "SH Heizen", "Feuererhaltung", "Feuer Aus"]),
                     binaryEntity("obj_pump", t("pufferpumpe")),
                 ]),
             ],
@@ -515,6 +515,16 @@ class FroelingHeizkreisCard extends BaseFroelingCard {
                         'default': 'stPumpInActive',
                     },
                 },
+                'obj_heating': {
+                    entity: 'select.froeling_hk1_operating_mode',
+                    stateClasses: {
+                        'aus': 'st1',
+                        'automatik': 'stPumpActive',
+                        'extraheizen': 'stHeatingOn',
+                        'partybetrieb': 'st9',
+                        'default': 'stHeatingOff'
+                    }
+                },
             },
         };
     }
@@ -527,6 +537,7 @@ class FroelingHeizkreisCard extends BaseFroelingCard {
                     textEntity("txt_room-temp", t("raumtemperatur")),
                     textEntity("txt_flow-temp", t("vorlauftemperatur")),
                     binaryEntity("obj_pump-01", t("heizkreispumpe")),
+                    stateEntity("obj_heating", t("heizkreis_betriebsmodus"), ["aus", "automatik", "extraheizen", "partybetrieb"]),
                 ]),
             ],
         };
@@ -653,6 +664,16 @@ class FroelingPufferCard extends BaseFroelingCard {
                     displayId: 'buffer-middle-sensor',
                     display: true,
                 },
+                'txt_buffer-middle-2-sensor': {
+                    entity: 'sensor.froeling_puffer_1_temperatur_fuehler_2',
+                    displayId: 'buffer-middle-2-sensor',
+                    display: false,
+                },
+                'txt_buffer-middle-3-sensor': {
+                    entity: 'sensor.froeling_puffer_1_temperatur_fuehler_3',
+                    displayId: 'buffer-middle-3-sensor',
+                    display: false,
+                },
                 'txt_buffer-upper-sensor': {
                     entity: 'sensor.froeling_puffer_1_temperatur_oben',
                     displayId: 'buffer-upper-sensor',
@@ -675,6 +696,8 @@ class FroelingPufferCard extends BaseFroelingCard {
                 entityGroup("entities", t("pufferspeicher"), [
                     textEntity("txt_buffer-upper-sensor", t("temperatur-oben")),
                     textEntity("txt_buffer-middle-sensor", t("temperatur-mitte")),
+                    textEntity("txt_buffer-middle-2-sensor", t("temperatur-mitte-2")),
+                    textEntity("txt_buffer-middle-3-sensor", t("temperatur-mitte-3")),
                     textEntity("txt_buffer-lower-sensor", t("temperatur-unten")),
                     textEntity("txt_buffer-load", t("ladezustand")),
                     textEntity("txt_pump-01-rpm", t("pumpen-ansteuerung")),
