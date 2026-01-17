@@ -134,6 +134,8 @@ const TRANSLATIONS = {
         'betriebsstunden': 'Betriebsstunden',
         'kollektorpumpe': 'Kollektorpumpe',
         'heizkreis_betriebsmodus': 'Heizkreis Betriebsmodus',
+        'asche_entleerung': 'Verbleibende Heizstunden bis zur Asche Entleeren Warnung',
+        'fuellstand_pellets': 'Füllstand im Pelletsbehälter',
     },
     'en': {
         'kessel': 'Boiler',
@@ -172,6 +174,8 @@ const TRANSLATIONS = {
         'betriebsstunden': 'Operating Hours',
         'kollektorpumpe': 'Collector Pump',
         'heizkreis_betriebsmodus': 'Heating Circuit Operating Mode',
+        'asche_entleerung': 'Remaining Heating Hours until Ash Emptying Warning',
+        'fuellstand_pellets': 'Level in Pellet Container',
     }
 };
 
@@ -350,6 +354,8 @@ class FroelingKesselCard extends BaseFroelingCard {
         return {
             schema: [
                 entityGroup("entities", t("kessel"), [
+                    textEntity("txt_ash-counter", t("asche_entleerung")),
+                    textEntity("txt_fuel-level", t("fuellstand_pellets")),
                     textEntity("txt_boiler-temp", t("kesseltemperatur")),
                     textEntity("txt_flue-gas", t("abgastemperatur")),
                     textEntity("txt_lambda", t("restsauerstoff")),
