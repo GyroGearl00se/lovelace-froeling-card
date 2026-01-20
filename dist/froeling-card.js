@@ -2,7 +2,7 @@
 class BaseFroelingCard extends HTMLElement {
     constructor() {
         super();
-        this.attachShadow({ mode: 'open' });
+        this.attachShadow({ mode: "open" });
         this._config = null;
         this._hass = null;
         this._svgLoaded = false;
@@ -11,616 +11,824 @@ class BaseFroelingCard extends HTMLElement {
     setConfig(config) {
         this._config = config;
         this.shadowRoot.innerHTML = `
-            <style>
-                :host {
-                    display: block;
-                    padding: 16px;
-                    background: var(--card-background-color, white);
-                    border-radius: var(--ha-card-border-radius, 8px);
-                    box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0, 0, 0, 0.2));
-                }
-                svg {
-                    width: 100%;
-                    height: auto;
-                }
-            </style>
-            <div id="container">
-                <p>Lade SVG...</p>
-            </div>
-        `;
+      <style>
+        :host {
+          display: block;
+          padding: 16px;
+          background: var(--card-background-color);
+          border-radius: var(--ha-card-border-radius, 8px);
+        }
+
+        .displayOff {
+          display: none;
+        }
+      </style>
+      <div id="container">Loading SVG…</div>
+    `;
         this._loadSvg();
     }
 
     set hass(hass) {
         this._hass = hass;
-        if (this._config && this._config.entities && this._svgLoaded) {
-            this._config.entities.forEach(({ entity, id, stateClasses }) => {
-                const entityState = hass.states[entity]?.state || 'N/A';
-                const unit = this._hass.states[entity]?.attributes?.unit_of_measurement ?? '';
-
-                // Only update text for elements that are intended to display text
-                if (id && id.startsWith('txt_')) {
-                    this._updateSvgText(id, entityState, unit);
-                }
-
-                // Update styles if stateClasses are defined
-                if (stateClasses) {
-                    this._updateSvgStyle(id, entityState, stateClasses);
-                }
-
-                // Support display toggles
-                const displayId = this._getEntityPropForId(id, 'displayId');
-                const display = this._getEntityPropForId(id, 'display');
-
-                if (displayId) {
-                    this._updateDisplay(displayId, display);
-                }
-            });
-        }
+        currentLang = hass.language || hass.locale?.language;
+        if (!this._svgLoaded || !this._config?.entities) return;
+        this._updateAll();
     }
 
     async _loadSvg() {
-        try {
-            const response = await fetch(this.svgUrl);
-            if (!response.ok) throw new Error("SVG konnte nicht geladen werden.");
-            const svgText = await response.text();
-            const container = this.shadowRoot.getElementById('container');
-            container.innerHTML = svgText;
-            this._svgLoaded = true;
-
-            if (this._hass && this._config && this._config.entities) {
-                this._config.entities.forEach(({ entity, id, stateClasses }) => {
-                    const entityState = this._hass.states[entity]?.state || 'N/A';
-                    const unit = this._hass.states[entity]?.attributes?.unit_of_measurement ?? '';
-                    if (stateClasses) {
-                        this._updateSvgStyle(id, entityState, stateClasses);
-                    } else {
-                        this._updateSvgText(id, entityState, unit);
-                    }
-                    if (this._config.entities) {
-                        const displayId = this._getEntityPropForId(id, 'displayId');
-                        const display = this._getEntityPropForId(id, 'display');
-                        if (displayId) {
-                            this._updateDisplay(displayId, display);
-                        }
-                    }
-                });
-            }
-        } catch (error) {
-            console.error(error);
-            this.shadowRoot.getElementById('container').innerHTML = `<p>Fehler: ${error.message}</p>`;
-        }
+        const res = await fetch(this.svgUrl);
+        const svg = await res.text();
+        this.shadowRoot.getElementById("container").innerHTML = svg;
+        this._svgLoaded = true;
+        if (this._hass) this._updateAll();
     }
 
-    _updateSvgText(id, text, unit) {
-        const svgElement = this.shadowRoot.querySelector(`#${id}`);
-        if (svgElement && svgElement.tagName.toLowerCase() === 'text') {
-            svgElement.textContent = text + unit;
-        } else {
-            console.warn(`SVG-Element mit ID '${id}' nicht gefunden oder ist kein Textelement.`);
-        }
+    _updateAll() {
+        Object.entries(this._config.entities).forEach(([id, cfg]) => {
+            const stateObj = this._hass.states[cfg.entity];
+            const state = stateObj?.state ?? "N/A";
+            const unit = stateObj?.attributes?.unit_of_measurement ?? "";
+
+            if (id.startsWith("txt_")) {
+                this._updateSvgText(id, state, unit);
+            }
+
+            if (cfg.stateClasses) {
+                this._updateSvgStyle(id, state, cfg.stateClasses);
+            }
+
+            if (cfg.displayId) {
+                this._updateDisplay(cfg.displayId, cfg.display);
+            }
+        });
+    }
+
+    _updateSvgText(id, value, unit) {
+        const el = this.shadowRoot.querySelector(`#${id}`);
+        if (el) el.textContent = `${value}${unit}`;
     }
 
     _updateSvgStyle(id, state, stateClasses) {
-        const svgElement = this.shadowRoot.querySelector(`#${id}`);
-        if (svgElement) {
-            // Remove all classes defined in stateClasses
-            Object.values(stateClasses).forEach(className => {
-                svgElement.classList.remove(className);
-            });
+        const el = this.shadowRoot.querySelector(`#${id}`);
+        if (!el) return;
 
-            // Add the class corresponding to the current state, or use the fallback class
-            const className = stateClasses[state] || stateClasses['default'];
-            if (className) {
-                svgElement.classList.add(className);
-            }
-        } else {
-            console.warn(`SVG-Element mit ID '${id}' nicht gefunden.`);
-        }
+        [...el.classList]
+            .filter(c => c.startsWith("st"))
+            .forEach(c => el.classList.remove(c));
+
+        const cls = stateClasses[state] || stateClasses.default;
+        if (cls) el.classList.add(cls);
     }
 
-    _getEntityPropForId(id, prop) {
-        if (!this._config || !Array.isArray(this._config.entities)) return undefined;
-        const entry = this._config.entities.find(e => e.id === id);
-        return entry ? entry[prop] : undefined;
-    }
 
-    _updateDisplay(displayId, display) {
-        const svgElement = this.shadowRoot.querySelector(`#${displayId}`);
-        if (!svgElement) {
-            console.warn(`SVG-Element für Display mit ID '${displayId}' nicht gefunden.`);
-            return;
-        }
 
-        // Normalize display to boolean
-        const isOn = (display === true) || (String(display).toLowerCase() === 'on') || (String(display).toLowerCase() === 'true');
+    _updateDisplay(id, display) {
+        const el = this.shadowRoot.querySelector(`#${id}`);
+        if (!el) return;
 
-        svgElement.classList.remove('displayOn', 'displayOff');
-        svgElement.classList.add(isOn ? 'displayOn' : 'displayOff');
+        const on = display === true || String(display).toLowerCase() === 'on';
+        el.classList.toggle("displayOff", !on);
     }
 
     getCardSize() {
         return 3;
     }
-
-    static getConfigElement() {
-        return document.createElement('froeling-card-editor');
-    }
 }
+
+let currentLang = 'en';
+const TRANSLATIONS = {
+    'de': {
+        'kessel': 'Kessel',
+        'kesseltemperatur': 'Kesseltemperatur',
+        'abgastemperatur': 'Abgastemperatur',
+        'restsauerstoff': 'Restsauerstoff',
+        'saugzuggeblaese': 'Saugzuggebläse',
+        'kesselzustand': 'Kesselzustand',
+        'pufferpumpe': 'Pufferpumpe',
+        'zweitkessel': 'Zweitkessel',
+        'zweitkessel-zustand': 'Zweitkessel Zustand',
+        'pumpen-ansteuerung': 'Pumpen-Ansteuerung',
+        'heizkreis': 'Heizkreis',
+        'aussentemperatur': 'Außentemperatur',
+        'raumtemperatur': 'Raumtemperatur',
+        'vorlauftemperatur': 'Vorlauftemperatur',
+        'heizkreispumpe': 'Heizkreispumpe',
+        'austragung': 'Austragung',
+        'pellet-fuellstand': 'Pellet-Füllstand',
+        'pelletverbrauch': 'Pelletverbrauch',
+        'restbestand-lager': 'Restbestand Lager',
+        'boilertemperatur-oben': 'Boilertemperatur oben',
+        'boilerpumpe': 'Boilerpumpe',
+        'boiler': 'Boiler',
+        'pufferspeicher': 'Pufferspeicher',
+        'temperatur-oben': 'Temperatur oben',
+        'temperatur-mitte': 'Temperatur Mitte',
+        'temperatur-mitte-2': 'Temperatur Mitte 2',
+        'temperatur-mitte-3': 'Temperatur Mitte 3',
+        'temperatur-unten': 'Temperatur unten',
+        'ladezustand': 'Ladezustand',
+        'zirkulationspumpe': 'Zirkulationspumpe',
+        'rucklauftemperatur': 'Rücklauftemperatur',
+        'solarthermie': 'Solarthermie',
+        'kollektortemperatur': 'Kollektortemperatur',
+        'betriebsstunden': 'Betriebsstunden',
+        'kollektorpumpe': 'Kollektorpumpe',
+        'heizkreis_betriebsmodus': 'Heizkreis Betriebsmodus',
+        'asche_entleerung': 'Verbleibende Heizstunden bis zur Asche Entleeren Warnung',
+        'fuellstand_pellets': 'Füllstand im Pelletsbehälter',
+    },
+    'en': {
+        'kessel': 'Boiler',
+        'kesseltemperatur': 'Boiler Temperature',
+        'abgastemperatur': 'Flue Gas Temperature',
+        'restsauerstoff': 'Residual Oxygen',
+        'saugzuggeblaese': 'Induced Draft Fan',
+        'kesselzustand': 'Boiler State',
+        'pufferpumpe': 'Buffer Pump',
+        'zweitkessel': 'Second Boiler',
+        'zweitkessel-zustand': 'Second Boiler State',
+        'pumpen-ansteuerung': 'Pump Control',
+        'heizkreis': 'Heating Circuit',
+        'aussentemperatur': 'Outside Temperature',
+        'raumtemperatur': 'Room Temperature',
+        'vorlauftemperatur': 'Flow Temperature',
+        'heizkreispumpe': 'Heating Circuit Pump',
+        'austragung': 'Discharge',
+        'pellet-fuellstand': 'Pellet Level',
+        'pelletverbrauch': 'Pellet Consumption',
+        'restbestand-lager': 'Remaining Stock in Storage',
+        'boilertemperatur-oben': 'Boiler Temperature Top',
+        'boilerpumpe': 'Boiler Pump',
+        'boiler': 'Boiler',
+        'pufferspeicher': 'Buffer Tank',
+        'temperatur-oben': 'Temperature Top',
+        'temperatur-mitte': 'Temperature Middle',
+        'temperatur-mitte-2': 'Temperature Middle 2',
+        'temperatur-mitte-3': 'Temperature Middle 3',
+        'temperatur-unten': 'Temperature Bottom',
+        'ladezustand': 'Charge Level',
+        'zirkulationspumpe': 'Circulation Pump',
+        'rucklauftemperatur': 'Return Temperature',
+        'solarthermie': 'Solar Thermal',
+        'kollektortemperatur': 'Collector Temperature',
+        'betriebsstunden': 'Operating Hours',
+        'kollektorpumpe': 'Collector Pump',
+        'heizkreis_betriebsmodus': 'Heating Circuit Operating Mode',
+        'asche_entleerung': 'Remaining Heating Hours until Ash Emptying Warning',
+        'fuellstand_pellets': 'Level in Pellet Container',
+    }
+};
+
+const t = (key) => {
+    const lang = currentLang.split('-')[0];
+    return TRANSLATIONS[lang]?.[key] || TRANSLATIONS['en']?.[key] || key;
+};
+// SCHEMA HELPERS
+
+// Text / Sensor Entity
+const textEntity = (id, title, opts = {}) => ({
+    name: id,
+    title,
+    type: "expandable",
+    expanded: false,
+    schema: [
+        {
+            name: "entity",
+            required: true,
+            selector: { entity: {} },
+        },
+        ...(opts.display !== false
+            ? [
+                {
+                    name: "display",
+                    title: "display",
+                    selector: { boolean: {} },
+                },
+            ]
+            : []),
+    ],
+});
+
+// Binary Sensor with State Classes
+const binaryEntity = (id, title) => ({
+    name: id,
+    title,
+    type: "expandable",
+    expanded: false,
+    schema: [
+        {
+            name: "entity",
+            required: true,
+            selector: { entity: { domain: "binary_sensor" } },
+        },
+        {
+            name: "stateClasses",
+            title: "stateClasses",
+            type: "expandable",
+            expanded: false,
+            schema: [
+                {
+                    name: 'on',
+                    title: 'on',
+                    selector: { text: {} },
+                },
+                {
+                    name: 'default',
+                    title: 'default',
+                    selector: { text: {} },
+                },
+            ],
+        },
+    ],
+});
+
+// State Entity mit State Classes
+const stateEntity = (id, title, states = []) => ({
+    name: id,
+    title,
+    type: "expandable",
+    schema: [
+        {
+            name: "entity",
+            required: true,
+            selector: { entity: {} },
+        },
+        {
+            name: "stateClasses",
+            title: "stateClasses",
+            type: "expandable",
+            schema: [
+                ...states.map((state) => ({
+                    name: state,
+                    title: state,
+                    selector: { text: {} },
+                })),
+                {
+                    name: "default",
+                    title: "default",
+                    selector: { text: {} },
+                },
+            ],
+        },
+    ],
+});
+
+
+// Card Entity Group
+const entityGroup = (name, label, schema) => ({
+    name,
+    type: "expandable",
+    label,
+    expanded: true,
+    schema,
+});
 
 // Individual Cards
 class FroelingKesselCard extends BaseFroelingCard {
     constructor() {
         super();
-        this.svgUrl = '/local/community/lovelace-froeling-card/kessel.svg';
+        this.svgUrl = "/local/community/lovelace-froeling-card/kessel.svg";
     }
 
     static getStubConfig() {
         return {
-            entities: [
-                {
-                    id: 'txt_ash-counter',
+            entities: {
+                'txt_ash-counter': {
                     entity: 'sensor.froeling_verbleibende_heizstunden_bis_zur_asche_entleeren_warnung',
-                    label: 'Verbleibende Heizstunden bis zur Entleerung des Aschebehälters',
                     displayId: 'ash-counter',
                     display: 'on'
                 },
-                {
-                    id: 'txt_fuel-level',
-                    entity: 'sensor.froeling_fuellstand_im_pelletsbehaelter',
-                    label: 'Füllstand im Pelletsbehälter',
+                'txt_fuel-level': {
+                    entity: 'sensor.froeling_fullstand_im_pelletsbehalter',
                     displayId: 'fuel-level',
                     display: 'on'
                 },
-                {
-                    id: 'txt_fan-rpm',
+                'txt_fan-rpm': {
                     entity: 'sensor.froeling_saugzugdrehzahl',
-                    label: 'Drehzahl des Saugzuggebläses',
                     displayId: 'fan-rpm',
                     display: 'on'
                 },
-                {
-                    id: 'txt_boiler-temp',
+                'txt_boiler-temp': {
                     entity: 'sensor.froeling_kesseltemperatur',
-                    label: 'Kesseltemperatur',
                     displayId: 'boiler-temp',
                     display: 'on'
                 },
-                {
-                    id: 'txt_flue-gas',
+                'txt_flue-gas': {
                     entity: 'sensor.froeling_abgastemperatur',
-                    label: 'Abgastemperatur',
                     displayId: 'flue-gas',
                     display: 'on'
                 },
-                {
-                    id: 'txt_lambda',
+                'txt_lambda': {
                     entity: 'sensor.froeling_restsauerstoffgehalt',
-                    label: 'Restsauerstoffgehalt',
                     displayId: 'lambda',
                     display: 'on'
                 },
-                {
-                    id: 'txt_pump-01-rpm',
+                'txt_pump-01-rpm': {
                     entity: 'sensor.froeling_puffer_1_pufferpumpen_ansteuerung',
-                    label: 'Pufferpumpen Ansteuerung',
                     displayId: 'pump-01-rpm',
                     display: 'on'
                 },
-                {
-                    id: 'obj_flame',
+                'obj_flame': {
                     entity: 'sensor.froeling_kesselzustand',
-                    label: 'Kesselzustand',
                     stateClasses: {
-                        'Vorheizen': 'stHeatingOn',
+                        'Vorheizen': 'st4',
                         'Heizen': 'stHeatingOn',
                         'SH Heizen': 'stHeatingOn',
+                        'Feuererhaltung': 'st6',
+                        'Feuer Aus': 'st9',
                         'default': 'stHeatingOff'
                     }
                 },
-                {
-                    id: 'obj_pump',
+                'obj_pump': {
                     entity: 'binary_sensor.froeling_puffer_1_pumpe_an_aus',
-                    label: 'Pufferpumpe AN AUS',
                     stateClasses: {
                         'on': 'stPumpActive',
                         'default': 'stPumpInActive',
                     }
                 }
-            ]
+            }
         };
     }
+
+    static getConfigForm() {
+        return {
+            schema: [
+                entityGroup("entities", t("kessel"), [
+                    textEntity("txt_ash-counter", t("asche_entleerung")),
+                    textEntity("txt_fuel-level", t("fuellstand_pellets")),
+                    textEntity("txt_boiler-temp", t("kesseltemperatur")),
+                    textEntity("txt_flue-gas", t("abgastemperatur")),
+                    textEntity("txt_lambda", t("restsauerstoff")),
+                    textEntity("txt_fan-rpm", t("saugzuggeblaese")),
+                    stateEntity("obj_flame", t("kesselzustand"), ["Vorheizen", "Heizen", "SH Heizen", "Feuererhaltung", "Feuer Aus"]),
+                    binaryEntity("obj_pump", t("pufferpumpe")),
+                ]),
+            ],
+        };
+    }
+
 }
 
-customElements.define('froeling-kessel-card', FroelingKesselCard);
+customElements.define("froeling-kessel-card", FroelingKesselCard);
 
 class FroelingZweitKesselCard extends BaseFroelingCard {
     constructor() {
         super();
-        this.svgUrl = '/local/community/lovelace-froeling-card/kessel2.svg';
+        this.svgUrl = "/local/community/lovelace-froeling-card/kessel2.svg";
     }
 
     static getStubConfig() {
         return {
-            entities: [
-                {
-                    id: 'txt_boiler2-temp',
+            entities: {
+                'txt_boiler2-temp': {
                     entity: 'sensor.froeling_zweitkessel_temperatur',
-                    label: 'Zweitkessel Temperatur',
                     displayId: 'boiler2-temp',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'obj_flame',
+                'obj_flame': {
                     entity: 'sensor.froeling_zweitkessel_zustand',
-                    label: 'Zweitkessel Zustand',
                     stateClasses: {
-                        'Vorheizen': 'stHeatingOn',
+                        'Vorheizen': 'st4',
                         'Heizen': 'stHeatingOn',
                         'SH Heizen': 'stHeatingOn',
+                        'Feuererhaltung': 'st6',
+                        'Feuer Aus': 'st9',
                         'default': 'stHeatingOff'
                     }
-                }
-            ]
+                },
+            },
+        };
+    }
+
+    static getConfigForm() {
+        return {
+            schema: [
+                entityGroup("entities", t("zweitkessel"), [
+                    textEntity("txt_boiler2-temp", "Zweitkessel Temperatur"),
+                    stateEntity("obj_flame", t("zweitkessel-zustand"), ["Vorheizen", "Heizen", "SH Heizen", "Feuererhaltung", "Feuer Aus"]),
+                ]),
+            ],
         };
     }
 }
 
-customElements.define('froeling-zweitkessel-card', FroelingZweitKesselCard);
+customElements.define("froeling-zweitkessel-card", FroelingZweitKesselCard);
+
 
 class FroelingKesselOhnePelletsCard extends BaseFroelingCard {
     constructor() {
         super();
-        this.svgUrl = '/local/community/lovelace-froeling-card/kessel_ohne_pellets.svg';
+        this.svgUrl = "/local/community/lovelace-froeling-card/kessel_ohne_pellets.svg";
     }
 
     static getStubConfig() {
         return {
-            entities: [
-                {
-                    id: 'txt_fan-rpm',
+            entities: {
+                'txt_fan-rpm': {
                     entity: 'sensor.froeling_saugzugdrehzahl',
-                    label: 'Drehzahl des Saugzuggebläses',
                     displayId: 'fan-rpm',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'txt_boiler-temp',
+                'txt_boiler-temp': {
                     entity: 'sensor.froeling_kesseltemperatur',
-                    label: 'Kesseltemperatur',
                     displayId: 'boiler-temp',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'txt_flue-gas',
+                'txt_flue-gas': {
                     entity: 'sensor.froeling_abgastemperatur',
-                    label: 'Abgastemperatur',
                     displayId: 'flue-gas',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'txt_lambda',
+                'txt_lambda': {
                     entity: 'sensor.froeling_restsauerstoffgehalt',
-                    label: 'Restsauerstoffgehalt',
                     displayId: 'lambda',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'txt_pump-01-rpm',
+                'txt_pump-01-rpm': {
                     entity: 'sensor.froeling_puffer_1_pufferpumpen_ansteuerung',
-                    label: 'Pufferpumpen Ansteuerung',
                     displayId: 'pump-01-rpm',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'obj_flame',
+                'obj_flame': {
                     entity: 'sensor.froeling_kesselzustand',
-                    label: 'Kesselzustand',
                     stateClasses: {
-                        'Vorheizen': 'stHeatingOn',
+                        'Vorheizen': 'st4',
                         'Heizen': 'stHeatingOn',
                         'SH Heizen': 'stHeatingOn',
+                        'Feuererhaltung': 'st6',
+                        'Feuer Aus': 'st9',
                         'default': 'stHeatingOff'
                     }
                 },
-                {
-                    id: 'obj_pump',
+                'obj_pump': {
                     entity: 'binary_sensor.froeling_puffer_1_pumpe_an_aus',
-                    label: 'Pufferpumpe AN AUS',
                     stateClasses: {
                         'on': 'stPumpActive',
                         'default': 'stPumpInActive',
-                    }
-                }
-            ]
+                    },
+                },
+            },
+        };
+    }
+
+    static getConfigForm() {
+        return {
+            schema: [
+                entityGroup("entities", t("kessel"), [
+                    textEntity("txt_boiler-temp", t("kesseltemperatur")),
+                    textEntity("txt_flue-gas", t("abgastemperatur")),
+                    textEntity("txt_lambda", t("restsauerstoff")),
+                    textEntity("txt_fan-rpm", t("saugzuggeblaese")),
+                    textEntity("txt_pump-01-rpm", t("pumpen-ansteuerung")),
+                    stateEntity("obj_flame", t("kesselzustand"), ["Vorheizen", "Heizen", "SH Heizen", "Feuererhaltung", "Feuer Aus"]),
+                    binaryEntity("obj_pump", t("pufferpumpe")),
+                ]),
+            ],
         };
     }
 }
 
-customElements.define('froeling-kessel-ohne-pellets-card', FroelingKesselOhnePelletsCard);
+customElements.define("froeling-kessel-ohne-pellets-card", FroelingKesselOhnePelletsCard);
 
 class FroelingHeizkreisCard extends BaseFroelingCard {
     constructor() {
         super();
-        this.svgUrl = '/local/community/lovelace-froeling-card/heizkreis.svg';
+        this.svgUrl = "/local/community/lovelace-froeling-card/heizkreis.svg";
     }
 
     static getStubConfig() {
         return {
-            entities: [
-                {
-                    id: 'txt_outside-temp',
+            entities: {
+                'txt_outside-temp': {
                     entity: 'sensor.froeling_aussentemperatur',
-                    label: 'Außentemperatur',
                     displayId: 'outside-temp',
-                    display: 'on'
+                    display: 'on',
                 },
-                {
-                    id: 'txt_room-temp',
+                'txt_room-temp': {
                     entity: 'sensor.froeling_raumtemperatur',
-                    label: 'Raumtemperatur',
                     displayId: 'room-temp',
-                    display: 'on'
+                    display: 'on',
                 },
-                {
-                    id: 'txt_flow-temp',
+                'txt_flow-temp': {
                     entity: 'sensor.froeling_hk01_vorlauf_isttemperatur',
-                    label: 'Vorlauftemperatur',
                     displayId: 'flow-temp',
-                    display: 'on'
+                    display: 'on',
                 },
-                {
-                    id: 'obj_pump-01',
+                'obj_pump-01': {
                     entity: 'binary_sensor.froeling_hk01_pumpe_an_aus',
-                    label: 'Heizkreispumpe AN AUS',
                     stateClasses: {
                         'on': 'stPumpActive',
                         'default': 'stPumpInActive',
+                    },
+                },
+                'obj_heating': {
+                    entity: 'select.froeling_hk1_operating_mode',
+                    stateClasses: {
+                        'aus': 'st1',
+                        'automatik': 'stPumpActive',
+                        'extraheizen': 'stHeatingOn',
+                        'partybetrieb': 'st9',
+                        'default': 'stHeatingOff'
                     }
-                }
-            ]
+                },
+            },
         };
     }
+
+    static getConfigForm() {
+        return {
+            schema: [
+                entityGroup("entities", t("heizkreis"), [
+                    textEntity("txt_outside-temp", t("aussentemperatur")),
+                    textEntity("txt_room-temp", t("raumtemperatur")),
+                    textEntity("txt_flow-temp", t("vorlauftemperatur")),
+                    binaryEntity("obj_pump-01", t("heizkreispumpe")),
+                    stateEntity("obj_heating", t("heizkreis_betriebsmodus"), ["aus", "automatik", "extraheizen", "partybetrieb"]),
+                ]),
+            ],
+        };
+    }
+
 }
 
-customElements.define('froeling-heizkreis-card', FroelingHeizkreisCard);
+customElements.define("froeling-heizkreis-card", FroelingHeizkreisCard);
 
 class FroelingAustragungCard extends BaseFroelingCard {
     constructor() {
         super();
-        this.svgUrl = '/local/community/lovelace-froeling-card/austragung.svg';
+        this.svgUrl = "/local/community/lovelace-froeling-card/austragung.svg";
     }
 
     static getStubConfig() {
         return {
-            entities: [
-                {
-                    id: 'txt_fuel-level',
-                    entity: 'sensor.froeling_fuellstand_im_pelletsbehaelter',
-                    label: 'Füllstand im Pelletsvorratsbehälter',
+            entities: {
+                'txt_fuel-level': {
+                    entity: 'sensor.froeling_fullstand_im_pelletsbehalter',
                     displayId: 'fuel-level',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'txt_consumption',
+                'txt_consumption': {
                     entity: 'sensor.froeling_pelletverbrauch_gesamt',
-                    label: 'Pelletverbrauch Gesamt',
                     displayId: 'consumption',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'txt_storage-counter',
+                'txt_storage-counter': {
                     entity: 'number.froeling_pelletlager_restbestand',
-                    label: 'Restbestand im Brennstofflagerraum',
                     displayId: 'storage-counter',
-                    display: 'on'
-                }
-            ]
+                    display: true,
+                },
+            },
+        };
+    }
+
+    static getConfigForm() {
+        return {
+            schema: [
+                entityGroup("entities", t("austragung"), [
+                    textEntity("txt_fuel-level", t("pellet-fuellstand")),
+                    textEntity("txt_consumption", t("pelletverbrauch")),
+                    textEntity("txt_storage-counter", t("restbestand-lager")),
+                ]),
+            ],
         };
     }
 }
-customElements.define('froeling-austragung-card', FroelingAustragungCard);
+
+customElements.define("froeling-austragung-card", FroelingAustragungCard);
 
 class FroelingBoilerCard extends BaseFroelingCard {
     constructor() {
         super();
-        this.svgUrl = '/local/community/lovelace-froeling-card/boiler.svg';
+        this.svgUrl = "/local/community/lovelace-froeling-card/boiler.svg";
     }
 
     static getStubConfig() {
         return {
-            entities: [
-                {
-                    id: 'txt_pump-01-rpm',
+            entities: {
+                'txt_pump-01-rpm': {
                     entity: 'sensor.froeling_boiler_1_pumpe_ansteuerung',
-                    label: 'Boiler Pumpe Ansteuerung',
                     displayId: 'pump-01-rpm',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'txt_dhw-temp',
+                'txt_dhw-temp': {
                     entity: 'sensor.froeling_boiler_1_temperatur_oben',
-                    label: 'Boilertemperatur oben',
                     displayId: 'dhw-temp',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'obj_pump-01',
+                'obj_pump-01': {
                     entity: 'binary_sensor.froeling_boiler_1_pumpe_an_aus',
-                    label: 'Zirkulationspumpe AN/AUS',
                     stateClasses: {
                         'on': 'stPumpActive',
                         'default': 'stPumpInActive',
-                    }
-                }
-            ]
+                    },
+                },
+            },
+        };
+    }
+
+    static getConfigForm() {
+        return {
+            schema: [
+                entityGroup("entities", t("boiler"), [
+                    textEntity("txt_dhw-temp", t("boilertemperatur-oben")),
+                    textEntity("txt_pump-01-rpm", t("pumpen-ansteuerung")),
+                    binaryEntity("obj_pump-01", t("boilerpumpe")),
+                ]),
+            ],
         };
     }
 }
-customElements.define('froeling-boiler-card', FroelingBoilerCard);
+
+customElements.define("froeling-boiler-card", FroelingBoilerCard);
 
 class FroelingPufferCard extends BaseFroelingCard {
     constructor() {
         super();
-        this.svgUrl = '/local/community/lovelace-froeling-card/puffer.svg';
+        this.svgUrl = "/local/community/lovelace-froeling-card/puffer.svg";
     }
 
     static getStubConfig() {
         return {
-            entities: [
-                {
-                    id: 'txt_pump-01-rpm',
+            entities: {
+                'txt_pump-01-rpm': {
                     entity: 'sensor.froeling_puffer_1_pufferpumpen_ansteuerung',
-                    label: 'Pufferpumpen Ansteuerung',
                     displayId: 'pump-01-rpm',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'txt_buffer-load',
+                'txt_buffer-load': {
                     entity: 'sensor.froeling_puffer_1_ladezustand',
-                    label: 'Ladezustand des Pufferspeichers',
                     displayId: 'buffer-load',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'txt_buffer-lower-sensor',
+                'txt_buffer-lower-sensor': {
                     entity: 'sensor.froeling_puffer_1_temperatur_unten',
-                    label: 'Tempertaur unten im Pufferspeicher',
                     displayId: 'buffer-lower-sensor',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'txt_buffer-middle-sensor',
+                'txt_buffer-middle-sensor': {
                     entity: 'sensor.froeling_puffer_1_temperatur_mitte',
-                    label: 'Tempertaur mitte im Pufferspeicher',
                     displayId: 'buffer-middle-sensor',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'txt_buffer-upper-sensor',
+                'txt_buffer-middle-2-sensor': {
+                    entity: 'sensor.froeling_puffer_1_temperatur_fuehler_2',
+                    displayId: 'buffer-middle-2-sensor',
+                    display: false,
+                },
+                'txt_buffer-middle-3-sensor': {
+                    entity: 'sensor.froeling_puffer_1_temperatur_fuehler_3',
+                    displayId: 'buffer-middle-3-sensor',
+                    display: false,
+                },
+                'txt_buffer-upper-sensor': {
                     entity: 'sensor.froeling_puffer_1_temperatur_oben',
-                    label: 'Tempertaur oben im Pufferspeicher',
                     displayId: 'buffer-upper-sensor',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'obj_pump',
+                'obj_pump': {
                     entity: 'binary_sensor.froeling_puffer_1_pumpe_an_aus',
-                    label: 'Pufferpumpe AN AUS',
                     stateClasses: {
                         'on': 'stPumpActive',
                         'default': 'stPumpInActive',
-                    }
-                }
-            ]
+                    },
+                },
+            },
+        };
+    }
+
+    static getConfigForm() {
+        return {
+            schema: [
+                entityGroup("entities", t("pufferspeicher"), [
+                    textEntity("txt_buffer-upper-sensor", t("temperatur-oben")),
+                    textEntity("txt_buffer-middle-sensor", t("temperatur-mitte")),
+                    textEntity("txt_buffer-middle-2-sensor", t("temperatur-mitte-2")),
+                    textEntity("txt_buffer-middle-3-sensor", t("temperatur-mitte-3")),
+                    textEntity("txt_buffer-lower-sensor", t("temperatur-unten")),
+                    textEntity("txt_buffer-load", t("ladezustand")),
+                    textEntity("txt_pump-01-rpm", t("pumpen-ansteuerung")),
+                    binaryEntity("obj_pump", t("pufferpumpe")),
+                ]),
+            ],
         };
     }
 }
-customElements.define('froeling-puffer-card', FroelingPufferCard);
+customElements.define("froeling-puffer-card", FroelingPufferCard);
 
 class FroelingZirkulationspumpeCard extends BaseFroelingCard {
     constructor() {
         super();
-        this.svgUrl = '/local/community/lovelace-froeling-card/zirkulationspumpe.svg';
+        this.svgUrl = "/local/community/lovelace-froeling-card/zirkulationspumpe.svg";
     }
 
     static getStubConfig() {
         return {
-            entities: [
-                {
-                    id: 'txt_circulation-pump-rpm',
+            entities: {
+                'txt_circulation-pump-rpm': {
                     entity: 'sensor.froeling_drehzahl_der_zirkulations_pumpe',
-                    label: 'Ansteuerung der Zirkulationspumpe',
                     displayId: 'circulation-pump-rpm',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'txt_circulation-temp',
+                'txt_circulation-temp': {
                     entity: 'sensor.froeling_rucklauftemperatur_an_der_zirkulations_leitung',
-                    label: 'Rücklauftemperatur an der Zirkulationsleitung',
                     displayId: 'circulation-temp',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'obj_pump-01',
+                'obj_pump-01': {
                     entity: 'binary_sensor.froeling_zirkulationspumpe_an_aus',
-                    label: 'Zirkulationspumpe AN/AUS',
                     stateClasses: {
                         'on': 'stPumpActive',
                         'default': 'stPumpInActive',
-                    }
-                }
-            ]
+                    },
+                },
+            },
+        };
+    }
+
+    static getConfigForm() {
+        return {
+            schema: [
+                entityGroup("entities", t("zirkulationspumpe"), [
+                    textEntity("txt_circulation-temp", t("rucklauftemperatur")),
+                    textEntity("txt_circulation-pump-rpm", t("pumpen-ansteuerung")),
+                    binaryEntity("obj_pump-01", t("zirkulationspumpe")),
+                ]),
+            ],
         };
     }
 }
-customElements.define('froeling-zirkulationspumpe-card', FroelingZirkulationspumpeCard);
+
+customElements.define("froeling-zirkulationspumpe-card", FroelingZirkulationspumpeCard);
 
 class FroelingSolarthermieCard extends BaseFroelingCard {
     constructor() {
         super();
-        this.svgUrl = '/local/community/lovelace-froeling-card/solarthermie.svg';
+        this.svgUrl = "/local/community/lovelace-froeling-card/solarthermie.svg";
     }
 
     static getStubConfig() {
         return {
-            entities: [
-                {
-                    id: 'txt_pump-01-rpm',
+            entities: {
+                'txt_pump-01-rpm': {
                     entity: 'sensor.froeling_kollektor_pumpe',
-                    label: 'Ansteuerung der Kollektorpumpe',
                     displayId: 'pump-01-rpm',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'txt_operating-hours',
+                'txt_operating-hours': {
                     entity: 'sensor.froeling_kollektor_pumpe_laufzeit',
-                    label: 'Betriebsstunden der Kollektorpumpe',
                     displayId: 'operating-hours',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'txt_outside-temp',
+                'txt_outside-temp': {
                     entity: 'sensor.froeling_aussentemperatur',
-                    label: 'Außentemperatur',
                     displayId: 'outside-temp',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'txt_solar-temp',
+                'txt_solar-temp': {
                     entity: 'sensor.froeling_kollektortemperatur',
-                    label: 'Kollektortemperatur',
                     displayId: 'solar-temp',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'txt_return-temp',
+                'txt_return-temp': {
                     entity: 'sensor.froeling_kollektor_rueklauftemperatur',
-                    label: 'Kollektor-Rücklauftemperatur',
                     displayId: 'return-temp',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'txt_flow-temp',
+                'txt_flow-temp': {
                     entity: 'sensor.froeling_kollektor_vorlauftemperatur',
-                    label: 'Kollektor-Vorlauftemperatur',
                     displayId: 'flow-temp',
-                    display: 'on'
+                    display: true,
                 },
-                {
-                    id: 'obj_pump-01',
+                'obj_pump-01': {
                     entity: 'binary_sensor.froeling_kollektorpumpe_an_aus',
-                    label: 'Status der Kollektorpumpe',
                     stateClasses: {
                         'on': 'stPumpActive',
                         'default': 'stPumpInActive',
-                    }
-                }
-            ]
+                    },
+                },
+            },
+        };
+    }
+
+    static getConfigForm() {
+        return {
+            schema: [
+                entityGroup("entities", t("solarthermie"), [
+                    textEntity("txt_outside-temp", t("aussentemperatur")),
+                    textEntity("txt_solar-temp", t("kollektortemperatur")),
+                    textEntity("txt_flow-temp", t("vorlauftemperatur")),
+                    textEntity("txt_return-temp", t("rucklauftemperatur")),
+                    textEntity("txt_operating-hours", t("betriebsstunden")),
+                    textEntity("txt_pump-01-rpm", t("pumpen-ansteuerung")),
+                    binaryEntity("obj_pump-01", t("kollektorpumpe")),
+                ]),
+            ],
         };
     }
 }
-customElements.define('froeling-solarthermie-card', FroelingSolarthermieCard);
+customElements.define("froeling-solarthermie-card", FroelingSolarthermieCard);
+
+// Register cards in Lovelace
 
 if (window.customCards) {
     window.customCards.push(
@@ -629,7 +837,6 @@ if (window.customCards) {
             name: "Froeling Kessel Card",
             description: "Visuelle Darstellung Fröling - Kessel",
             preview: true,
-            editor: "froeling-card-editor",
             documentationURL: "https://github.com/GyroGearl00se"
         },
         {
@@ -637,7 +844,6 @@ if (window.customCards) {
             name: "Froeling Zweitkessel Card",
             description: "Visuelle Darstellung Fröling - Zweitkessel",
             preview: true,
-            editor: "froeling-card-editor",
             documentationURL: "https://github.com/GyroGearl00se"
         },
         {
@@ -645,7 +851,6 @@ if (window.customCards) {
             name: "Froeling Kessel ohne Pellets Card",
             description: "Visuelle Darstellung Fröling - Kessel (ohne Pellets)",
             preview: true,
-            editor: "froeling-card-editor",
             documentationURL: "https://github.com/GyroGearl00se"
         },
         {
@@ -653,7 +858,6 @@ if (window.customCards) {
             name: "Froeling Heizkreis Card",
             description: "Visuelle Darstellung Fröling - Heizkreis",
             preview: true,
-            editor: "froeling-card-editor",
             documentationURL: "https://github.com/GyroGearl00se"
         },
         {
@@ -661,7 +865,6 @@ if (window.customCards) {
             name: "Froeling Austragung Card",
             description: "Visuelle Darstellung Fröling - Austragung",
             preview: true,
-            editor: "froeling-card-editor",
             documentationURL: "https://github.com/GyroGearl00se"
         },
         {
@@ -669,7 +872,6 @@ if (window.customCards) {
             name: "Froeling Boiler Card",
             description: "Visuelle Darstellung Fröling - Boiler",
             preview: true,
-            editor: "froeling-card-editor",
             documentationURL: "https://github.com/GyroGearl00se"
         },
         {
@@ -677,7 +879,6 @@ if (window.customCards) {
             name: "Froeling Puffer Card",
             description: "Visuelle Darstellung Fröling - Puffer",
             preview: true,
-            editor: "froeling-card-editor",
             documentationURL: "https://github.com/GyroGearl00se"
         },
         {
@@ -685,7 +886,6 @@ if (window.customCards) {
             name: "Froeling Zirkulationspumpe Card",
             description: "Visuelle Darstellung Fröling - Zirkulationspumpe",
             preview: true,
-            editor: "froeling-card-editor",
             documentationURL: "https://github.com/GyroGearl00se"
         },
         {
@@ -693,267 +893,7 @@ if (window.customCards) {
             name: "Froeling Solarthermie Card",
             description: "Visuelle Darstellung Fröling - Solarthermie",
             preview: true,
-            editor: "froeling-card-editor",
             documentationURL: "https://github.com/GyroGearl00se"
         }
     );
 }
-
-// Card Editor
-class FroelingCardEditor extends HTMLElement {
-    constructor() {
-        super();
-        this.attachShadow({ mode: 'open' });
-        this._config = {};
-        this._hass = null;
-    }
-
-    set hass(hass) {
-        this._hass = hass;
-    }
-
-    setConfig(config) {
-        this._config = JSON.parse(JSON.stringify(config));
-        this.render();
-    }
-
-    configChanged(newConfig) {
-        this.dispatchEvent(new CustomEvent("config-changed", {
-            detail: { config: newConfig },
-            bubbles: true,
-            composed: true,
-        }));
-    }
-
-    render() {
-        if (!this._config || !Array.isArray(this._config.entities)) return;
-
-        if (!this.shadowRoot.innerHTML) {
-            this.shadowRoot.innerHTML = `
-                <style>
-                    .card-config {
-                        padding: 16px;
-                    }
-                    .entity {
-                        margin-bottom: 2px;
-                        border-radius: 10px;
-                        border: 2px solid #636363;
-                        position: relative;
-                        padding: 10px;
-                    }
-                    label {
-                        font-weight: bold;
-                        display: block;
-                        margin-bottom: 4px;
-                    }
-                    input {
-                        width: 100%;
-                        padding: 8px;
-                        box-sizing: border-box;
-                        border-top-left-radius: 4px;
-                        border-top-right-radius: 4px;
-                        border-bottom: 2px solid #0288d1;
-                    }
-                    .autocomplete-list {
-                        position: absolute;
-                        top: 100%;
-                        left: 0;
-                        right: 0;
-                        background: var(--card-background-color, #fff);
-                        border: 1px solid #ccc;
-                        border-radius: 4px;
-                        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-                        max-height: 150px;
-                        overflow-y: auto;
-                        z-index: 10;
-                        padding: 4px 0;
-                    }
-                    .autocomplete-item {
-                        padding: 8px 12px;
-                        cursor: pointer;
-                        font-size: 14px;
-                        transition: background 0.2s, color 0.2s;
-                    }
-                    .autocomplete-item:hover {
-                        background: var(--primary-color, #0288d1);
-                        color: white;
-                    }
-                    .switch {
-                        position: relative;
-                        display: inline-block;
-                        width: 50px;
-                        height: 24px;
-                        vertical-align: middle;
-                        margin-right: 8px;
-                        margin-top: 10px;
-                    }
-
-                    .switch input {
-                        opacity: 0;
-                        width: 0;
-                        height: 0;
-                    }
-
-                    .slider {
-                        position: absolute;
-                        cursor: pointer;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        bottom: 0;
-                        background-color: #ccc;
-                        transition: .2s;
-                        border-radius: 24px;
-                    }
-
-                    .slider:before {
-                        position: absolute;
-                        content: "";
-                        height: 18px;
-                        width: 18px;
-                        left: 3px;
-                        bottom: 3px;
-                        background-color: white;
-                        transition: .2s;
-                        border-radius: 50%;
-                    }
-
-                    input:checked + .slider {
-                        background-color: var(--primary-color, #0288d1);
-                    }
-
-                    input:checked + .slider:before {
-                        transform: translateX(26px);
-                    }
-                </style>
-                <div class="card-config">
-                    <h3>Entities</h3>
-                    <div id="entities"></div>
-                </div>
-            `;
-        }
-
-        const container = this.shadowRoot.querySelector('#entities');
-        container.innerHTML = '';
-
-        this._config.entities.forEach((entity, index) => {
-            const entityContainer = document.createElement('div');
-            entityContainer.className = 'entity';
-
-            const label = document.createElement('label');
-            const displayLabel = entity.label || `ID: ${entity.id || `Unknown ID ${index + 1}`}`;
-            label.textContent = displayLabel;
-            label.htmlFor = `entity-${index}`;
-            entityContainer.appendChild(label);
-
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.id = `entity-${index}`;
-            input.value = entity.entity || '';
-            input.dataset.index = index;
-
-            let switchWrapper = null;
-            let switchInput = null;
-            if (entity.displayId) {
-                switchWrapper = document.createElement('label');
-                switchWrapper.className = 'switch';
-                switchWrapper.style.marginLeft = '8px';
-
-                switchInput = document.createElement('input');
-                switchInput.type = 'checkbox';
-                switchInput.id = `display-${index}`;
-                switchInput.checked = entity.display === 'on' || entity.display === true;
-                switchInput.dataset.index = index;
-
-                const switchSlider = document.createElement('span');
-                switchSlider.className = 'slider';
-
-                switchWrapper.appendChild(switchInput);
-                switchWrapper.appendChild(switchSlider);
-
-                switchInput.addEventListener('change', (e) => this._onDisplayToggleChange(e));
-            }
-
-            const autocompleteList = document.createElement('div');
-            autocompleteList.className = 'autocomplete-list';
-            autocompleteList.style.display = 'none';
-
-            input.addEventListener('input', (e) => this._onInputChange(e, autocompleteList));
-            input.addEventListener('focus', () => this._populateAutocomplete(autocompleteList));
-            input.addEventListener('blur', () => {
-                setTimeout(() => autocompleteList.style.display = 'none', 200);
-            });
-
-            autocompleteList.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                const selectedEntity = e.target.getAttribute('data-entity');
-                if (selectedEntity) {
-                    this._onAutocompleteSelect(index, selectedEntity, input, autocompleteList);
-                }
-            });
-
-            entityContainer.appendChild(input);
-            entityContainer.appendChild(autocompleteList);
-            if (switchWrapper) {
-                const displayLabelEl = document.createElement('label');
-                displayLabelEl.textContent = 'Display';
-                displayLabelEl.style.display = 'inline-block';
-                displayLabelEl.style.marginLeft = '6px';
-
-                entityContainer.appendChild(switchWrapper);
-                entityContainer.appendChild(displayLabelEl);
-            }
-            container.appendChild(entityContainer);
-        });
-    }
-
-    _onDisplayToggleChange(event) {
-        const index = Number(event.target.dataset.index);
-        const checked = event.target.checked;
-        const updatedEntities = [...this._config.entities];
-        updatedEntities[index] = { ...updatedEntities[index], display: checked ? 'on' : 'off' };
-        const newConfig = { ...this._config, entities: updatedEntities };
-        this._config = newConfig;
-        this.configChanged(newConfig);
-    }
-
-    _onInputChange(event, autocompleteList) {
-        const value = event.target.value.toLowerCase();
-        this._populateAutocomplete(autocompleteList, value);
-    }
-
-    _populateAutocomplete(autocompleteList, filter = '') {
-        if (!this._hass || !this._hass.states) return;
-
-        const allEntities = Object.keys(this._hass.states);
-        const filteredEntities = allEntities
-        .filter((entity) => entity.toLowerCase().includes(filter))
-        .slice(0, 10);
-
-        autocompleteList.innerHTML = '';
-        filteredEntities.forEach((entity) => {
-            const item = document.createElement('div');
-            item.className = 'autocomplete-item';
-            item.setAttribute('data-entity', entity);
-            item.textContent = entity;
-            autocompleteList.appendChild(item);
-        });
-
-        autocompleteList.style.display = filteredEntities.length ? 'block' : 'none';
-    }
-
-    _onAutocompleteSelect(index, selectedEntity, input, autocompleteList) {
-        const updatedEntities = [...this._config.entities];
-        updatedEntities[index] = { ...updatedEntities[index], entity: selectedEntity };
-
-        const newConfig = { ...this._config, entities: updatedEntities };
-        this._config = newConfig;
-
-        input.value = selectedEntity;
-
-        autocompleteList.style.display = 'none';
-        this.configChanged(newConfig);
-    }
-}
-
-customElements.define('froeling-card-editor', FroelingCardEditor);
