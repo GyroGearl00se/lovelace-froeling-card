@@ -113,6 +113,7 @@ const TRANSLATIONS = {
         'aussentemperatur': 'Außentemperatur',
         'raumtemperatur': 'Raumtemperatur',
         'vorlauftemperatur': 'Vorlauftemperatur',
+        'solltemperatur': 'Solltemperatur',
         'heizkreispumpe': 'Heizkreispumpe',
         'austragung': 'Austragung',
         'pellet-fuellstand': 'Pellet-Füllstand',
@@ -154,6 +155,7 @@ const TRANSLATIONS = {
         'aussentemperatur': 'Outside Temperature',
         'raumtemperatur': 'Room Temperature',
         'vorlauftemperatur': 'Flow Temperature',
+        'solltemperatur': 'Desired Temperature',
         'heizkreispumpe': 'Heating Circuit Pump',
         'austragung': 'Discharge',
         'pellet-fuellstand': 'Pellet Level',
@@ -517,6 +519,11 @@ class FroelingHeizkreisCard extends BaseFroelingCard {
                     displayId: 'flow-temp',
                     display: 'on',
                 },
+                'txt_desired-temp': {
+                    entity: 'sensor.froeling_hk1_vorlauf_solltemperatur',
+                    displayId: 'desired-temp',
+                    display: 'on',
+                },
                 'obj_pump-01': {
                     entity: 'binary_sensor.froeling_hk01_pumpe_an_aus',
                     stateClasses: {
@@ -545,6 +552,7 @@ class FroelingHeizkreisCard extends BaseFroelingCard {
                     textEntity("txt_outside-temp", t("aussentemperatur")),
                     textEntity("txt_room-temp", t("raumtemperatur")),
                     textEntity("txt_flow-temp", t("vorlauftemperatur")),
+                    textEntity("txt_desired-temp", t("solltemperatur")),
                     binaryEntity("obj_pump-01", t("heizkreispumpe")),
                     stateEntity("obj_heating", t("heizkreis_betriebsmodus"), ["aus", "automatik", "extraheizen", "partybetrieb"]),
                 ]),

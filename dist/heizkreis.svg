@@ -19,9 +19,22 @@
 	.st4{fill-rule:evenodd;clip-rule:evenodd;fill:#646464;}
 	.st7{fill:#FFFFFF;stroke:#CCCCCC;stroke-miterlimit:10;}
 	.st8{fill:#CCCCCC;}
-	.st9{fill:#646464;}	.st10{font-family:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Roboto,Arial,Helvetica,sans-serif;font-specification:'Roboto,Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;}
+	.st9{fill:#646464;}
+	.st10{font-family:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Roboto,Arial,Helvetica,sans-serif;font-specification:'Roboto,Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;}
 	.st11{font-size:14px;}
+	.st12{font-size:8px; font;}
+	.st13{fill:#ff0000;}
 	.displayOff{display:none}
+
+
+	#desired-temp.displayOff + #txt_flow-temp {
+		-webkit-transform: translate(165px, 191px);
+		-ms-transform: translate(165px, 191px);
+		-o-transform: translate(165px, 191px);
+		-moz-transform: translate(165px, 191px);
+		transform: translate(165px, 191px);
+	}
+
 </style>
 <polyline id="room" class="st0" points="149.9,122.6 265.6,36.5 381.3,122.6 381.3,247.9 "/>
 <path id="flow-temp-sensor" class="st1" d="M143.1,205.5c0-0.7-0.5-1.3-1-1.3h-13c-0.5,0-1,0.6-1,1.3v3.8h15V205.5z"/>
@@ -91,7 +104,10 @@
 			</g>
 		</g>
 	</g>
-	<text id="txt_flow-temp" transform="matrix(1 0 0 1 165 191.5317)" class="st1 st10 st11">°C</text>
+	<g id="desired-temp">
+	<text id="txt_desired-temp" transform="matrix(1 0 0 1 165 196)" class="st13 st10 st12">°C</text>
+	</g>
+	<text id="txt_flow-temp" transform="matrix(1 0 0 1 165 186)" class="st1 st10 st11">°C</text>
 </g>
 <g id="room-temp">
 	<g id="label_room-temp"><title>Raumtemperatur</title>
