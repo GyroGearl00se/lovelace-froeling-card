@@ -10,17 +10,26 @@ class BaseFroelingCard extends HTMLElement {
 
     setConfig(config) {
         this._config = config;
+        const background = this._config?.background || "var(--card-background-color)";
         this.shadowRoot.innerHTML = `
       <style>
         :host {
           display: block;
           padding: 16px;
-          background: var(--card-background-color);
+          background: ${background};
           border-radius: var(--ha-card-border-radius, 8px);
         }
 
         .displayOff {
           display: none;
+        }
+
+        #container svg {
+          width: 100%;
+          height: auto;
+          max-width: 100%;
+          max-height: 100%;
+          display: block;
         }
       </style>
       <div id="container">Loading SVG…</div>
@@ -37,15 +46,43 @@ class BaseFroelingCard extends HTMLElement {
 
     async _loadSvg() {
         const res = await fetch(this.svgUrl);
-        const svg = await res.text();
+        let svg = await res.text();
+        if (this._config?.viewBox) {
+            svg = this._applySvgViewBox(svg, this._config.viewBox);
+        }
         this.shadowRoot.getElementById("container").innerHTML = svg;
         this._svgLoaded = true;
         if (this._hass) this._updateAll();
     }
 
+    _applySvgViewBox(svgText, viewBox) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(svgText, "image/svg+xml");
+        const svg = doc.documentElement;
+        if (!svg || svg.tagName?.toLowerCase() !== "svg") {
+            return svgText;
+        }
+
+        let value;
+        if (typeof viewBox === "string") {
+            value = viewBox.trim();
+        } else {
+            const parts = ["x", "y", "width", "height"].map((key) => viewBox?.[key]);
+            if (parts.some((part) => part === undefined || part === null || part === "")) {
+                return svgText;
+            }
+            value = parts.join(" ");
+        }
+
+        if (value) {
+            svg.setAttribute("viewBox", value);
+        }
+        return new XMLSerializer().serializeToString(svg);
+    }
+
     _updateAll() {
         Object.entries(this._config.entities).forEach(([id, cfg]) => {
-            const stateObj = this._hass.states[cfg.entity];
+            const stateObj = cfg.entity ? this._hass.states[cfg.entity] : undefined;
             const state = stateObj?.state ?? "N/A";
             const unit = stateObj?.attributes?.unit_of_measurement ?? "";
 
@@ -57,8 +94,10 @@ class BaseFroelingCard extends HTMLElement {
                 this._updateSvgStyle(id, state, cfg.stateClasses);
             }
 
-            if (cfg.displayId) {
-                this._updateDisplay(cfg.displayId, cfg.display);
+            const displayId = cfg.displayId || (id.startsWith("grp_") ? id.slice(4) : undefined);
+            const display = cfg.display === undefined ? true : cfg.display;
+            if (displayId) {
+                this._updateDisplay(displayId, display);
             }
         });
     }
@@ -138,6 +177,8 @@ const TRANSLATIONS = {
         'heizkreis_betriebsmodus': 'Heizkreis Betriebsmodus',
         'asche_entleerung': 'Verbleibende Heizstunden bis zur Asche Entleeren Warnung',
         'fuellstand_pellets': 'Füllstand im Pelletsbehälter',
+        'storage': 'Lager',
+        'puffer-heizelement-leistung': 'Puffer Heizelement Leistung',
     },
     'en': {
         'kessel': 'Boiler',
@@ -180,6 +221,8 @@ const TRANSLATIONS = {
         'heizkreis_betriebsmodus': 'Heating Circuit Operating Mode',
         'asche_entleerung': 'Remaining Heating Hours until Ash Emptying Warning',
         'fuellstand_pellets': 'Level in Pellet Container',
+        'storage': 'Storage',
+        'puffer-heizelement-leistung': 'Buffer Heating Element Power',
     }
 };
 
@@ -277,17 +320,301 @@ const stateEntity = (id, title, states = []) => ({
     ],
 });
 
+const toggleEntity = (id, title, defaultDisplayId) => ({
+    name: id,
+    title,
+    type: "expandable",
+    expanded: false,
+    displayId: defaultDisplayId,
+    schema: [
+        {
+            name: "display",
+            title: "display",
+            selector: { boolean: {} },
+            default: true,
+        },
+    ],
+});
+
+const viewBoxGroup = (title, x, y, width, height) => ({
+    name: "viewBox",
+    title,
+    type: "expandable",
+    expanded: false,
+    schema: [
+        {
+            name: "x",
+            title: "x",
+            selector: { number: {} },
+            default: x,
+        },
+        {
+            name: "y",
+            title: "y",
+            selector: { number: {} },
+            default: y,
+        },
+        {
+            name: "width",
+            title: "width",
+            selector: { number: {} },
+            default: width,
+        },
+        {
+            name: "height",
+            title: "height",
+            selector: { number: {} },
+            default: height,
+        },
+    ],
+});
+
+const backgroundField = (title, defaultValue = "transparent") => ({
+    name: "background",
+    title,
+    selector: { text: {} },
+    default: defaultValue,
+});
+
+const configSchema = (schema) => [
+    backgroundField("Card background", "transparent"),
+    ...schema,
+];
 
 // Card Entity Group
-const entityGroup = (name, label, schema) => ({
+const entityGroup = (name, title, schema) => ({
     name,
     type: "expandable",
-    label,
+    title,
     expanded: true,
     schema,
 });
 
 // Individual Cards
+class FroelingAIOCard extends BaseFroelingCard {
+    constructor() {
+        super();
+        this.svgUrl = "/local/community/lovelace-froeling-card/aio.svg";
+    }
+
+    static getStubConfig() {
+        return {
+            viewBox: { x: 0, y: 0, width: 800, height: 540 },
+            entities: {
+                // KesselCard
+                'txt_ash-counter': {
+                    entity: 'sensor.froeling_verbleibende_heizstunden_bis_zur_asche_entleeren_warnung',
+                    displayId: 'ash-counter',
+                    display: 'on'
+                },
+                'txt_fan-rpm': {
+                    entity: 'sensor.froeling_saugzugdrehzahl',
+                    displayId: 'fan-rpm',
+                    display: 'on'
+                },
+                'txt_boiler-temp': {
+                    entity: 'sensor.froeling_kesseltemperatur',
+                    displayId: 'boiler-temp',
+                    display: 'on'
+                },
+                'txt_flue-gas': {
+                    entity: 'sensor.froeling_abgastemperatur',
+                    displayId: 'flue-gas',
+                    display: 'on'
+                },
+                'txt_lambda': {
+                    entity: 'sensor.froeling_restsauerstoffgehalt',
+                    displayId: 'lambda',
+                    display: 'on'
+                },
+                'txt_pump-04-rpm': {
+                    entity: 'sensor.froeling_puffer_1_pufferpumpen_ansteuerung',
+                    displayId: 'pump-04-rpm',
+                    display: 'on'
+                },
+                'obj_pump-04': {
+                    entity: 'binary_sensor.froeling_puffer_1_pumpe_an_aus',
+                    stateClasses: {
+                        'on': 'stPumpActive',
+                        'default': 'stPumpInActive',
+                    }
+                },
+                'obj_flame': {
+                    entity: 'sensor.froeling_kesselzustand',
+                    stateClasses: {
+                        'Vorheizen': 'st4',
+                        'Heizen': 'stHeatingOn',
+                        'SH Heizen': 'stHeatingOn',
+                        'Feuererhaltung': 'st6',
+                        'Feuer Aus': 'st9',
+                        'default': 'stHeatingOff'
+                    }
+                },
+
+                // HeizkreisCard
+                'txt_outside-temp': {
+                    entity: 'sensor.froeling_aussentemperatur',
+                    displayId: 'outside-temp',
+                    display: 'on',
+                },
+                'txt_room-temp': {
+                    entity: 'sensor.froeling_raumtemperatur',
+                    displayId: 'room-temp',
+                    display: 'on',
+                },
+                'txt_flow-temp': {
+                    entity: 'sensor.froeling_hk01_vorlauf_isttemperatur',
+                    displayId: 'flow-temp',
+                    display: 'on',
+                },
+                'obj_pump-01': {
+                    entity: 'binary_sensor.froeling_puffer_1_pumpe_an_aus',
+                    stateClasses: {
+                        'on': 'stPumpActive',
+                        'default': 'stPumpInActive',
+                    }
+                },
+                'obj_heating': {
+                    entity: 'select.froeling_hk1_operating_mode',
+                    stateClasses: {
+                        'aus': 'st1',
+                        'automatik': 'stPumpActive',
+                        'extraheizen': 'stHeatingOn',
+                        'partybetrieb': 'st9',
+                        'default': 'stHeatingOff'
+                    }
+                },
+
+                // AustragungCard
+                'grp_storage': {
+                    displayId: 'storage',
+                    display: true,
+                },
+                'txt_fuel-level': {
+                    entity: 'sensor.froeling_fullstand_im_pelletsbehalter',
+                    displayId: 'fuel-level',
+                    display: true,
+                },
+                'txt_consumption': {
+                    entity: 'sensor.froeling_pelletverbrauch_gesamt',
+                    displayId: 'consumption',
+                    display: true,
+                },
+                'txt_storage-counter': {
+                    entity: 'number.froeling_pelletlager_restbestand',
+                    displayId: 'storage-counter',
+                    display: true,
+                },
+
+                // BoilerCard
+                'txt_dhw-temp': {
+                    entity: 'sensor.froeling_boiler_1_temperatur_oben',
+                    displayId: 'dhw-temp',
+                    display: true,
+                },
+
+                // PufferCard
+                'txt_heating-element-power': {
+                    entity: 'sensor.froeling_heating_element_power',
+                    displayId: 'buffer-heating-element',
+                    display: true,
+                },
+                'txt_buffer-upper-sensor': {
+                    entity: 'sensor.froeling_puffer_1_temperatur_oben',
+                    displayId: 'buffer-upper-sensor',
+                    display: true,
+                },
+                'txt_buffer-lower-sensor': {
+                    entity: 'sensor.froeling_puffer_1_temperatur_unten',
+                    displayId: 'buffer-lower-sensor',
+                    display: true,
+                },
+                'txt_buffer-load': {
+                    entity: 'sensor.froeling_puffer_1_ladezustand',
+                    displayId: 'buffer-load',
+                    display: true,
+                },
+                'txt_pump-03-rpm': {
+                    entity: 'sensor.froeling_puffer_1_pufferpumpen_ansteuerung',
+                    displayId: 'pump-03-rpm',
+                    display: true,
+                },
+                'obj_pump-03': {
+                    entity: 'binary_sensor.froeling_puffer_1_pumpe_an_aus',
+                    stateClasses: {
+                        'on': 'stPumpActive',
+                        'default': 'stPumpInActive',
+                    }
+                },
+                // ZirkulationspumpeCard
+                'txt_circulation-pump-rpm': {
+                    entity: 'sensor.froeling_drehzahl_der_zirkulations_pumpe',
+                    displayId: 'pump-02-rpm',
+                    display: true,
+                },
+                'obj_pump-02': {
+                    entity: 'binary_sensor.froeling_zirkulationspumpe_an_aus',
+                    stateClasses: {
+                        'on': 'stPumpActive',
+                        'default': 'stPumpInActive',
+                    }
+                },
+            }
+        };
+    }
+
+    static getConfigForm() {
+        return {
+            schema: configSchema([
+                viewBoxGroup("SVG viewBox", 0, 0, 800, 540),
+                entityGroup("entities", t("kessel"), [
+                    textEntity("txt_ash-counter", t("asche_entleerung")),
+                    textEntity("txt_fan-rpm", t("saugzuggeblaese")),
+                    textEntity("txt_boiler-temp", t("kesseltemperatur")),
+                    textEntity("txt_flue-gas", t("abgastemperatur")),
+                    textEntity("txt_lambda", t("restsauerstoff")),
+                    textEntity("txt_pump-04-rpm", t("pufferpumpen-ansteuerung")),
+                    binaryEntity("obj_pump-04", t("heizkreispumpe")),
+                    stateEntity("obj_flame", t("kesselzustand"), ["Vorheizen", "Heizen", "SH Heizen", "Feuererhaltung", "Feuer Aus"]),
+
+                ]),
+                entityGroup("entities", t("heizkreis"), [
+                    textEntity("txt_outside-temp", t("aussentemperatur")),
+                    textEntity("txt_room-temp", t("raumtemperatur")),
+                    textEntity("txt_flow-temp", t("vorlauftemperatur")),
+                    binaryEntity("obj_pump-01", t("heizkreispumpe")),
+                    stateEntity("obj_heating", t("heizkreis_betriebsmodus"), ["aus", "automatik", "extraheizen", "partybetrieb"]),
+                ]),
+                entityGroup("entities", t("austragung"), [
+                    toggleEntity("grp_storage", t("storage"), "storage"),
+                    textEntity("txt_fuel-level", t("pellet-fuellstand")),
+                    textEntity("txt_consumption", t("pelletverbrauch")),
+                    textEntity("txt_storage-counter", t("restbestand-lager")),
+                ]),
+                entityGroup("entities", t("boiler"), [
+                    textEntity("txt_dhw-temp", t("boilertemperatur-oben")),
+                ]),
+                entityGroup("entities", t("pufferspeicher"), [
+                    textEntity("txt_heating-element-power", t("puffer-heizelement-leistung")),
+                    textEntity("txt_buffer-upper-sensor", t("temperatur-oben")),
+                    textEntity("txt_buffer-lower-sensor", t("temperatur-unten")),
+                    textEntity("txt_buffer-load", t("ladezustand")),
+                    textEntity("txt_pump-03-rpm", t("pumpen-ansteuerung")),
+                    binaryEntity("obj_pump-03", t("pufferpumpe")),
+                ]),
+                entityGroup("entities", t("zirkulationspumpe"), [
+                    textEntity("txt_circulation-pump-rpm", t("pumpen-ansteuerung")),
+                    binaryEntity("obj_pump-02", t("zirkulationspumpe")),
+                ]),
+            ])
+        };
+    }
+
+}
+
+customElements.define("froeling-aio-card", FroelingAIOCard);
+
+// Froeling Kessel Card
 class FroelingKesselCard extends BaseFroelingCard {
     constructor() {
         super();
@@ -296,6 +623,7 @@ class FroelingKesselCard extends BaseFroelingCard {
 
     static getStubConfig() {
         return {
+            viewBox: { x: 40, y: 40, width: 330, height: 200 },
             entities: {
                 'txt_ash-counter': {
                     entity: 'sensor.froeling_verbleibende_heizstunden_bis_zur_asche_entleeren_warnung',
@@ -356,7 +684,8 @@ class FroelingKesselCard extends BaseFroelingCard {
 
     static getConfigForm() {
         return {
-            schema: [
+            schema: configSchema([
+                viewBoxGroup("SVG viewBox", 40, 40, 330, 200),
                 entityGroup("entities", t("kessel"), [
                     textEntity("txt_ash-counter", t("asche_entleerung")),
                     textEntity("txt_fuel-level", t("fuellstand_pellets")),
@@ -368,7 +697,7 @@ class FroelingKesselCard extends BaseFroelingCard {
                     stateEntity("obj_flame", t("kesselzustand"), ["Vorheizen", "Heizen", "SH Heizen", "Feuererhaltung", "Feuer Aus"]),
                     binaryEntity("obj_pump", t("pufferpumpe")),
                 ]),
-            ],
+            ])
         };
     }
 
@@ -384,6 +713,7 @@ class FroelingZweitKesselCard extends BaseFroelingCard {
 
     static getStubConfig() {
         return {
+            viewBox: { x: 35, y: 15, width: 290, height: 250 },
             entities: {
                 'txt_boiler2-temp': {
                     entity: 'sensor.froeling_zweitkessel_temperatur',
@@ -407,12 +737,13 @@ class FroelingZweitKesselCard extends BaseFroelingCard {
 
     static getConfigForm() {
         return {
-            schema: [
+            schema: configSchema([
+                viewBoxGroup("SVG viewBox", 35, 15, 290, 250),
                 entityGroup("entities", t("zweitkessel"), [
                     textEntity("txt_boiler2-temp", "Zweitkessel Temperatur"),
                     stateEntity("obj_flame", t("zweitkessel-zustand"), ["Vorheizen", "Heizen", "SH Heizen", "Feuererhaltung", "Feuer Aus"]),
                 ]),
-            ],
+            ])
         };
     }
 }
@@ -428,6 +759,7 @@ class FroelingKesselOhnePelletsCard extends BaseFroelingCard {
 
     static getStubConfig() {
         return {
+            viewBox: { x: 15, y: 15, width: 375, height: 250 },
             entities: {
                 'txt_fan-rpm': {
                     entity: 'sensor.froeling_saugzugdrehzahl',
@@ -478,7 +810,8 @@ class FroelingKesselOhnePelletsCard extends BaseFroelingCard {
 
     static getConfigForm() {
         return {
-            schema: [
+            schema: configSchema([
+                viewBoxGroup("SVG viewBox", 15, 15, 375, 250),
                 entityGroup("entities", t("kessel"), [
                     textEntity("txt_boiler-temp", t("kesseltemperatur")),
                     textEntity("txt_flue-gas", t("abgastemperatur")),
@@ -488,7 +821,7 @@ class FroelingKesselOhnePelletsCard extends BaseFroelingCard {
                     stateEntity("obj_flame", t("kesselzustand"), ["Vorheizen", "Heizen", "SH Heizen", "Feuererhaltung", "Feuer Aus"]),
                     binaryEntity("obj_pump", t("pufferpumpe")),
                 ]),
-            ],
+            ])
         };
     }
 }
@@ -503,6 +836,7 @@ class FroelingHeizkreisCard extends BaseFroelingCard {
 
     static getStubConfig() {
         return {
+            viewBox: { x: 5, y: 15, width: 390, height: 245 },
             entities: {
                 'txt_outside-temp': {
                     entity: 'sensor.froeling_aussentemperatur',
@@ -547,7 +881,8 @@ class FroelingHeizkreisCard extends BaseFroelingCard {
 
     static getConfigForm() {
         return {
-            schema: [
+            schema: configSchema([
+                viewBoxGroup("SVG viewBox", 5, 15, 390, 245),
                 entityGroup("entities", t("heizkreis"), [
                     textEntity("txt_outside-temp", t("aussentemperatur")),
                     textEntity("txt_room-temp", t("raumtemperatur")),
@@ -556,7 +891,7 @@ class FroelingHeizkreisCard extends BaseFroelingCard {
                     binaryEntity("obj_pump-01", t("heizkreispumpe")),
                     stateEntity("obj_heating", t("heizkreis_betriebsmodus"), ["aus", "automatik", "extraheizen", "partybetrieb"]),
                 ]),
-            ],
+            ])
         };
     }
 
@@ -572,6 +907,7 @@ class FroelingAustragungCard extends BaseFroelingCard {
 
     static getStubConfig() {
         return {
+            viewBox: { x: 10, y: 25, width: 380, height: 225 },
             entities: {
                 'txt_fuel-level': {
                     entity: 'sensor.froeling_fullstand_im_pelletsbehalter',
@@ -594,13 +930,14 @@ class FroelingAustragungCard extends BaseFroelingCard {
 
     static getConfigForm() {
         return {
-            schema: [
+            schema: configSchema([
+                viewBoxGroup("SVG viewBox", 10, 25, 380, 225),
                 entityGroup("entities", t("austragung"), [
                     textEntity("txt_fuel-level", t("pellet-fuellstand")),
                     textEntity("txt_consumption", t("pelletverbrauch")),
                     textEntity("txt_storage-counter", t("restbestand-lager")),
                 ]),
-            ],
+            ])
         };
     }
 }
@@ -615,6 +952,7 @@ class FroelingBoilerCard extends BaseFroelingCard {
 
     static getStubConfig() {
         return {
+            viewBox: { x: 5, y: 15, width: 390, height: 250 },
             entities: {
                 'txt_pump-01-rpm': {
                     entity: 'sensor.froeling_boiler_1_pumpe_ansteuerung',
@@ -639,13 +977,14 @@ class FroelingBoilerCard extends BaseFroelingCard {
 
     static getConfigForm() {
         return {
-            schema: [
+            schema: configSchema([
+                viewBoxGroup("SVG viewBox", 5, 15, 390, 250),
                 entityGroup("entities", t("boiler"), [
                     textEntity("txt_dhw-temp", t("boilertemperatur-oben")),
                     textEntity("txt_pump-01-rpm", t("pumpen-ansteuerung")),
                     binaryEntity("obj_pump-01", t("boilerpumpe")),
                 ]),
-            ],
+            ])
         };
     }
 }
@@ -660,6 +999,7 @@ class FroelingPufferCard extends BaseFroelingCard {
 
     static getStubConfig() {
         return {
+            viewBox: { x: 360, y: 20, width: 460, height: 240 },
             entities: {
                 'txt_pump-01-rpm': {
                     entity: 'sensor.froeling_puffer_1_pufferpumpen_ansteuerung',
@@ -709,7 +1049,8 @@ class FroelingPufferCard extends BaseFroelingCard {
 
     static getConfigForm() {
         return {
-            schema: [
+            schema: configSchema([
+                viewBoxGroup("SVG viewBox", 360, 20, 460, 240),
                 entityGroup("entities", t("pufferspeicher"), [
                     textEntity("txt_buffer-upper-sensor", t("temperatur-oben")),
                     textEntity("txt_buffer-middle-sensor", t("temperatur-mitte")),
@@ -720,7 +1061,7 @@ class FroelingPufferCard extends BaseFroelingCard {
                     textEntity("txt_pump-01-rpm", t("pumpen-ansteuerung")),
                     binaryEntity("obj_pump", t("pufferpumpe")),
                 ]),
-            ],
+            ])
         };
     }
 }
@@ -734,6 +1075,7 @@ class FroelingZirkulationspumpeCard extends BaseFroelingCard {
 
     static getStubConfig() {
         return {
+            viewBox: { x: 25, y: 20, width: 350, height: 240 },
             entities: {
                 'txt_circulation-pump-rpm': {
                     entity: 'sensor.froeling_drehzahl_der_zirkulations_pumpe',
@@ -758,13 +1100,14 @@ class FroelingZirkulationspumpeCard extends BaseFroelingCard {
 
     static getConfigForm() {
         return {
-            schema: [
+            schema: configSchema([
+                viewBoxGroup("SVG viewBox", 25, 20, 350, 240),
                 entityGroup("entities", t("zirkulationspumpe"), [
                     textEntity("txt_circulation-temp", t("rucklauftemperatur")),
                     textEntity("txt_circulation-pump-rpm", t("pumpen-ansteuerung")),
                     binaryEntity("obj_pump-01", t("zirkulationspumpe")),
                 ]),
-            ],
+            ])
         };
     }
 }
@@ -779,6 +1122,7 @@ class FroelingSolarthermieCard extends BaseFroelingCard {
 
     static getStubConfig() {
         return {
+            viewBox: { x: 60, y: 10, width: 530, height: 260 },
             entities: {
                 'txt_pump-01-rpm': {
                     entity: 'sensor.froeling_kollektor_pumpe',
@@ -823,7 +1167,8 @@ class FroelingSolarthermieCard extends BaseFroelingCard {
 
     static getConfigForm() {
         return {
-            schema: [
+            schema: configSchema([
+                viewBoxGroup("SVG viewBox", 60, 10, 530, 260),
                 entityGroup("entities", t("solarthermie"), [
                     textEntity("txt_outside-temp", t("aussentemperatur")),
                     textEntity("txt_solar-temp", t("kollektortemperatur")),
@@ -833,7 +1178,7 @@ class FroelingSolarthermieCard extends BaseFroelingCard {
                     textEntity("txt_pump-01-rpm", t("pumpen-ansteuerung")),
                     binaryEntity("obj_pump-01", t("kollektorpumpe")),
                 ]),
-            ],
+            ])
         };
     }
 }
@@ -843,6 +1188,13 @@ customElements.define("froeling-solarthermie-card", FroelingSolarthermieCard);
 
 if (window.customCards) {
     window.customCards.push(
+        {
+            type: "froeling-aio-card",
+            name: "Froeling AIO Card",
+            description: "Visuelle Darstellung Fröling - AllInOne",
+            preview: true,
+            documentationURL: "https://github.com/GyroGearl00se"
+        },
         {
             type: "froeling-kessel-card",
             name: "Froeling Kessel Card",
