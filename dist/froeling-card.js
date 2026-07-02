@@ -10,29 +10,20 @@ class BaseFroelingCard extends HTMLElement {
 
     setConfig(config) {
         this._config = config;
-        const background = this._config?.background || "var(--card-background-color)";
         this.shadowRoot.innerHTML = `
       <style>
-        :host {
-          display: block;
-          padding: 16px;
-          background: ${background};
-          border-radius: var(--ha-card-border-radius, 8px);
-        }
 
         .displayOff {
           display: none;
         }
 
-        #container svg {
+        svg {
           width: 100%;
           height: auto;
-          max-width: 100%;
-          max-height: 100%;
           display: block;
         }
       </style>
-      <div id="container">Loading SVG…</div>
+      <ha-card class="card-content ha-scrollbar">Loading…</ha-card>
     `;
         this._loadSvg();
     }
@@ -45,14 +36,22 @@ class BaseFroelingCard extends HTMLElement {
     }
 
     async _loadSvg() {
-        const res = await fetch(this.svgUrl);
-        let svg = await res.text();
-        if (this._config?.viewBox) {
-            svg = this._applySvgViewBox(svg, this._config.viewBox);
+        try {
+            const res = await fetch(this.svgUrl);
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}: Failed to load SVG`);
+            }
+            let svg = await res.text();
+            if (this._config?.viewBox) {
+                svg = this._applySvgViewBox(svg, this._config.viewBox);
+            }
+            this.shadowRoot.querySelector(".card-content").innerHTML = svg;
+            this._svgLoaded = true;
+            if (this._hass) this._updateAll();
+        } catch (error) {
+            console.error(`[Froeling Card] SVG load error: ${error.message}`);
+            this.shadowRoot.querySelector(".card-content").innerHTML = `<div style="color: var(--error-color); text-align: center; padding: 20px; font-size: 14px;">Failed to load SVG: ${error.message}</div>`;
         }
-        this.shadowRoot.getElementById("container").innerHTML = svg;
-        this._svgLoaded = true;
-        if (this._hass) this._updateAll();
     }
 
     _applySvgViewBox(svgText, viewBox) {
@@ -369,18 +368,6 @@ const viewBoxGroup = (title, x, y, width, height) => ({
     ],
 });
 
-const backgroundField = (title, defaultValue = "transparent") => ({
-    name: "background",
-    title,
-    selector: { text: {} },
-    default: defaultValue,
-});
-
-const configSchema = (schema) => [
-    backgroundField("Card background", "transparent"),
-    ...schema,
-];
-
 // Card Entity Group
 const entityGroup = (name, title, schema) => ({
     name,
@@ -565,7 +552,7 @@ class FroelingAIOCard extends BaseFroelingCard {
 
     static getConfigForm() {
         return {
-            schema: configSchema([
+            schema: [
                 viewBoxGroup("SVG viewBox", 0, 0, 800, 540),
                 entityGroup("entities", t("kessel"), [
                     textEntity("txt_ash-counter", t("asche_entleerung")),
@@ -606,7 +593,7 @@ class FroelingAIOCard extends BaseFroelingCard {
                     textEntity("txt_circulation-pump-rpm", t("pumpen-ansteuerung")),
                     binaryEntity("obj_pump-02", t("zirkulationspumpe")),
                 ]),
-            ])
+            ]
         };
     }
 
@@ -684,7 +671,7 @@ class FroelingKesselCard extends BaseFroelingCard {
 
     static getConfigForm() {
         return {
-            schema: configSchema([
+            schema: [
                 viewBoxGroup("SVG viewBox", 40, 40, 330, 200),
                 entityGroup("entities", t("kessel"), [
                     textEntity("txt_ash-counter", t("asche_entleerung")),
@@ -697,7 +684,7 @@ class FroelingKesselCard extends BaseFroelingCard {
                     stateEntity("obj_flame", t("kesselzustand"), ["Vorheizen", "Heizen", "SH Heizen", "Feuererhaltung", "Feuer Aus"]),
                     binaryEntity("obj_pump", t("pufferpumpe")),
                 ]),
-            ])
+            ]
         };
     }
 
@@ -737,13 +724,13 @@ class FroelingZweitKesselCard extends BaseFroelingCard {
 
     static getConfigForm() {
         return {
-            schema: configSchema([
+            schema: [
                 viewBoxGroup("SVG viewBox", 35, 15, 290, 250),
                 entityGroup("entities", t("zweitkessel"), [
                     textEntity("txt_boiler2-temp", "Zweitkessel Temperatur"),
                     stateEntity("obj_flame", t("zweitkessel-zustand"), ["Vorheizen", "Heizen", "SH Heizen", "Feuererhaltung", "Feuer Aus"]),
                 ]),
-            ])
+            ]
         };
     }
 }
@@ -810,7 +797,7 @@ class FroelingKesselOhnePelletsCard extends BaseFroelingCard {
 
     static getConfigForm() {
         return {
-            schema: configSchema([
+            schema: [
                 viewBoxGroup("SVG viewBox", 15, 15, 375, 250),
                 entityGroup("entities", t("kessel"), [
                     textEntity("txt_boiler-temp", t("kesseltemperatur")),
@@ -821,7 +808,7 @@ class FroelingKesselOhnePelletsCard extends BaseFroelingCard {
                     stateEntity("obj_flame", t("kesselzustand"), ["Vorheizen", "Heizen", "SH Heizen", "Feuererhaltung", "Feuer Aus"]),
                     binaryEntity("obj_pump", t("pufferpumpe")),
                 ]),
-            ])
+            ]
         };
     }
 }
@@ -881,7 +868,7 @@ class FroelingHeizkreisCard extends BaseFroelingCard {
 
     static getConfigForm() {
         return {
-            schema: configSchema([
+            schema: [
                 viewBoxGroup("SVG viewBox", 5, 15, 390, 245),
                 entityGroup("entities", t("heizkreis"), [
                     textEntity("txt_outside-temp", t("aussentemperatur")),
@@ -891,7 +878,7 @@ class FroelingHeizkreisCard extends BaseFroelingCard {
                     binaryEntity("obj_pump-01", t("heizkreispumpe")),
                     stateEntity("obj_heating", t("heizkreis_betriebsmodus"), ["aus", "automatik", "extraheizen", "partybetrieb"]),
                 ]),
-            ])
+            ]
         };
     }
 
@@ -930,14 +917,14 @@ class FroelingAustragungCard extends BaseFroelingCard {
 
     static getConfigForm() {
         return {
-            schema: configSchema([
+            schema: [
                 viewBoxGroup("SVG viewBox", 10, 25, 380, 225),
                 entityGroup("entities", t("austragung"), [
                     textEntity("txt_fuel-level", t("pellet-fuellstand")),
                     textEntity("txt_consumption", t("pelletverbrauch")),
                     textEntity("txt_storage-counter", t("restbestand-lager")),
                 ]),
-            ])
+            ]
         };
     }
 }
@@ -977,16 +964,17 @@ class FroelingBoilerCard extends BaseFroelingCard {
 
     static getConfigForm() {
         return {
-            schema: configSchema([
+            schema: [
                 viewBoxGroup("SVG viewBox", 5, 15, 390, 250),
                 entityGroup("entities", t("boiler"), [
                     textEntity("txt_dhw-temp", t("boilertemperatur-oben")),
                     textEntity("txt_pump-01-rpm", t("pumpen-ansteuerung")),
                     binaryEntity("obj_pump-01", t("boilerpumpe")),
                 ]),
-            ])
+            ]
         };
-    }
+        };
+
 }
 
 customElements.define("froeling-boiler-card", FroelingBoilerCard);
@@ -1049,7 +1037,7 @@ class FroelingPufferCard extends BaseFroelingCard {
 
     static getConfigForm() {
         return {
-            schema: configSchema([
+            schema: [
                 viewBoxGroup("SVG viewBox", 360, 20, 460, 240),
                 entityGroup("entities", t("pufferspeicher"), [
                     textEntity("txt_buffer-upper-sensor", t("temperatur-oben")),
@@ -1061,7 +1049,7 @@ class FroelingPufferCard extends BaseFroelingCard {
                     textEntity("txt_pump-01-rpm", t("pumpen-ansteuerung")),
                     binaryEntity("obj_pump", t("pufferpumpe")),
                 ]),
-            ])
+            ]
         };
     }
 }
@@ -1100,14 +1088,14 @@ class FroelingZirkulationspumpeCard extends BaseFroelingCard {
 
     static getConfigForm() {
         return {
-            schema: configSchema([
+            schema: [
                 viewBoxGroup("SVG viewBox", 25, 20, 350, 240),
                 entityGroup("entities", t("zirkulationspumpe"), [
                     textEntity("txt_circulation-temp", t("rucklauftemperatur")),
                     textEntity("txt_circulation-pump-rpm", t("pumpen-ansteuerung")),
                     binaryEntity("obj_pump-01", t("zirkulationspumpe")),
                 ]),
-            ])
+            ]
         };
     }
 }
@@ -1167,7 +1155,7 @@ class FroelingSolarthermieCard extends BaseFroelingCard {
 
     static getConfigForm() {
         return {
-            schema: configSchema([
+            schema: [
                 viewBoxGroup("SVG viewBox", 60, 10, 530, 260),
                 entityGroup("entities", t("solarthermie"), [
                     textEntity("txt_outside-temp", t("aussentemperatur")),
@@ -1178,7 +1166,7 @@ class FroelingSolarthermieCard extends BaseFroelingCard {
                     textEntity("txt_pump-01-rpm", t("pumpen-ansteuerung")),
                     binaryEntity("obj_pump-01", t("kollektorpumpe")),
                 ]),
-            ])
+            ]
         };
     }
 }
