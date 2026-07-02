@@ -22,6 +22,14 @@ class BaseFroelingCard extends HTMLElement {
           height: auto;
           display: block;
         }
+
+        .clickable-text {
+          cursor: pointer;
+        }
+
+        .clickable-text:hover {
+          opacity: 0.8;
+        }
       </style>
       <ha-card class="card-content ha-scrollbar">Loading…</ha-card>
     `;
@@ -86,7 +94,7 @@ class BaseFroelingCard extends HTMLElement {
             const unit = stateObj?.attributes?.unit_of_measurement ?? "";
 
             if (id.startsWith("txt_")) {
-                this._updateSvgText(id, state, unit);
+                this._updateSvgText(id, state, unit, cfg.entity);
             }
 
             if (cfg.stateClasses) {
@@ -101,9 +109,30 @@ class BaseFroelingCard extends HTMLElement {
         });
     }
 
-    _updateSvgText(id, value, unit) {
+    _updateSvgText(id, value, unit, entity) {
         const el = this.shadowRoot.querySelector(`#${id}`);
-        if (el) el.textContent = `${value}${unit}`;
+        if (el) {
+            el.textContent = `${value}${unit}`;
+            
+            // Make clickable if entity exists
+            if (entity) {
+                el.classList.add("clickable-text");
+                el.setAttribute("data-entity-id", entity);
+                el.removeEventListener("click", this._handleTextClick);
+                el.addEventListener("click", this._handleTextClick.bind(this));
+            }
+        }
+    }
+
+    _handleTextClick(event) {
+        const entityId = event.target.getAttribute("data-entity-id");
+        if (entityId && this._hass) {
+            this.dispatchEvent(new CustomEvent("hass-more-info", {
+                detail: { entityId },
+                bubbles: true,
+                composed: true,
+            }));
+        }
     }
 
     _updateSvgStyle(id, state, stateClasses) {
