@@ -91,10 +91,17 @@ class BaseFroelingCard extends HTMLElement {
         Object.entries(this._config.entities).forEach(([id, cfg]) => {
             const stateObj = cfg.entity ? this._hass.states[cfg.entity] : undefined;
             const state = stateObj?.state ?? "N/A";
-            const unit = stateObj?.attributes?.unit_of_measurement ?? "";
+
+            let formatted = "N/A";
+            if (stateObj) {
+                const isNumeric = stateObj.state !== "" && !isNaN(Number(stateObj.state));
+                formatted = isNumeric
+                    ? this._hass.formatEntityState(stateObj)
+                    : stateObj.state;
+            }
 
             if (id.startsWith("txt_")) {
-                this._updateSvgText(id, state, unit, cfg.entity);
+                this._updateSvgText(id, formatted, cfg.entity);
             }
 
             if (cfg.stateClasses) {
@@ -109,10 +116,10 @@ class BaseFroelingCard extends HTMLElement {
         });
     }
 
-    _updateSvgText(id, value, unit, entity) {
+    _updateSvgText(id, content, entity) {
         const el = this.shadowRoot.querySelector(`#${id}`);
         if (el) {
-            el.textContent = `${value}${unit}`;
+            el.textContent = content;
             
             // Make clickable if entity exists
             if (entity) {
