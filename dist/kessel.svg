@@ -661,6 +661,6 @@
 	<title>Rücklauftemperatur</title>
 	<rect x="215" y="200" width="65" height="30" rx="3" class="st12"/>
 	<use href="#symb_thermometer_2_" transform="translate(87 114)"/>
-	<text id="txt_return-temp" x="255" y="219" class="st9 st10 st11">°C</text>
+	<text id="txt_return-temp" x="255" y="221" class="st9 st10 st11">°C</text>
 </g>
 </svg>
