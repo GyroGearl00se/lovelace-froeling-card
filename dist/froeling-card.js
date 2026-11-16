@@ -683,6 +683,11 @@ class FroelingKesselCard extends BaseFroelingCard {
                     displayId: 'pump-01-rpm',
                     display: 'on'
                 },
+                'txt_return-temp': {
+                    entity: 'sensor.froeling_rucklauffuhler',
+                    displayId: 'return-temp',
+                    display: 'on'
+                },
                 'obj_flame': {
                     entity: 'sensor.froeling_kesselzustand',
                     stateClasses: {
@@ -717,6 +722,7 @@ class FroelingKesselCard extends BaseFroelingCard {
                     textEntity("txt_flue-gas", t("abgastemperatur")),
                     textEntity("txt_lambda", t("restsauerstoff")),
                     textEntity("txt_pump-01-rpm", t("pufferpumpen-ansteuerung")),
+                    textEntity("txt_return-temp", t("rucklauftemperatur")),
                     stateEntity("obj_flame", t("kesselzustand"), ["Vorheizen", "Heizen", "SH Heizen", "Feuererhaltung", "Feuer Aus"]),
                     binaryEntity("obj_pump", t("pufferpumpe")),
                 ]),
@@ -809,6 +815,11 @@ class FroelingKesselOhnePelletsCard extends BaseFroelingCard {
                     displayId: 'pump-01-rpm',
                     display: true,
                 },
+                'txt_return-temp': {
+                    entity: 'sensor.froeling_rucklauffuhler',
+                    displayId: 'return-temp',
+                    display: true,
+                },
                 'obj_flame': {
                     entity: 'sensor.froeling_kesselzustand',
                     stateClasses: {
@@ -841,6 +852,7 @@ class FroelingKesselOhnePelletsCard extends BaseFroelingCard {
                     textEntity("txt_lambda", t("restsauerstoff")),
                     textEntity("txt_fan-rpm", t("saugzuggeblaese")),
                     textEntity("txt_pump-01-rpm", t("pumpen-ansteuerung")),
+                    textEntity("txt_return-temp", t("rucklauftemperatur")),
                     stateEntity("obj_flame", t("kesselzustand"), ["Vorheizen", "Heizen", "SH Heizen", "Feuererhaltung", "Feuer Aus"]),
                     binaryEntity("obj_pump", t("pufferpumpe")),
                 ]),
