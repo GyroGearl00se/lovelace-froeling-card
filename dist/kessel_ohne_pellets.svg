@@ -283,7 +283,7 @@
 <g id="pump-01-rpm">
    <g
       id="label_pump-01-rpm"
-      transform="translate(-66)"><title
+      transform="translate(-71)"><title
       id="title532">Pufferpumpen Ansteuerung</title>
       <path
       class="st6"
@@ -311,7 +311,25 @@
    <text
       id="txt_pump-01-rpm"
       class="st9 st10 st11"
-      x="292"
+      x="287"
       y="220.5806">%</text>
+</g>
+<g id="return-temp">
+   <title>Rücklauftemperatur</title>
+   <rect
+      x="150"
+      y="200"
+      width="66"
+      height="30"
+      rx="3"
+      class="st12" />
+   <use
+      href="#symb_thermometer_2_"
+      transform="translate(22.5 114)" />
+   <text
+      id="txt_return-temp"
+      class="st9 st10 st11"
+      x="190"
+      y="221">°C</text>
 </g>
 </svg>
