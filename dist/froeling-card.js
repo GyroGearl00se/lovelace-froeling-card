@@ -6,6 +6,8 @@ class BaseFroelingCard extends HTMLElement {
         this._config = null;
         this._hass = null;
         this._svgLoaded = false;
+        this._handleTextClick = this._handleTextClick.bind(this);
+        this.shadowRoot.addEventListener("click", this._handleTextClick);
     }
 
     setConfig(config) {
@@ -125,14 +127,17 @@ class BaseFroelingCard extends HTMLElement {
             if (entity) {
                 el.classList.add("clickable-text");
                 el.setAttribute("data-entity-id", entity);
-                el.removeEventListener("click", this._handleTextClick);
-                el.addEventListener("click", this._handleTextClick.bind(this));
+            } else {
+                el.classList.remove("clickable-text");
+                el.removeAttribute("data-entity-id");
             }
         }
     }
 
     _handleTextClick(event) {
-        const entityId = event.target.getAttribute("data-entity-id");
+        const target = event.composedPath?.().find(el => el instanceof Element && el.hasAttribute("data-entity-id"))
+            || (event.target instanceof Element ? event.target.closest("[data-entity-id]") : null);
+        const entityId = target?.getAttribute("data-entity-id");
         if (entityId && this._hass) {
             this.dispatchEvent(new CustomEvent("hass-more-info", {
                 detail: { entityId },
